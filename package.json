@@ -1,0 +1,14 @@
+{
+  "name": "export-anything",
+  "version": "1.0.0",
+  "scripts": {
+    "watch": "sass --watch assets/scss:assets/css",
+    "build": "sass assets/scss:assets/css --style compressed --no-source-map"
+  },
+  "author": "CodeMyWP",
+  "description": "",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "sass": "1.49.0"
+  }
+}
