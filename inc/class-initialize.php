@@ -47,13 +47,14 @@ class Initialize {
      */
     public function create_post_types_table() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'cmw_ea_post_types';
+
+        $table_name = $wpdb->prefix . PostType::$table_name_without_prefix;
 
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
-            title text NOT NULL,
+            `name` text NOT NULL,
             post_type varchar(20) NOT NULL,
             PRIMARY KEY  (id)
         ) $charset_collate;";
@@ -67,7 +68,7 @@ class Initialize {
      */
     public function create_columns_table() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'cmw_ea_columns';
+        $table_name = $wpdb->prefix . Column::$table_name_without_prefix;
 
         $charset_collate = $wpdb->get_charset_collate();
 

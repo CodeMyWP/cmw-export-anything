@@ -14,7 +14,7 @@ do_action('export_anything_before_post_types');
  * @hooked CodeMyWP\Plugins\ExportAnything\Settings::post_types - 10
  * 
  */
-do_action('export_anything_post_types', $post_types);
+do_action('export_anything_post_types', $args);
 
 
 

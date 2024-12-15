@@ -14,8 +14,11 @@ define('EXPORT_ANYTHING_FILE', __FILE__);
 define('EXPORT_ANYTHING_DIR', plugin_dir_path(__FILE__));
 define('EXPORT_ANYTHING_URL', plugin_dir_url(__FILE__));
 
-// Initialize Plugin
-require_once 'inc/class-initialize.php';
+// Initialize Post Type
+require_once 'inc/class-post-type.php';
+
+// Initialize Column
+require_once 'inc/class-column.php';
 
 // Initialize Utilities
 require_once 'inc/class-utilities.php';
@@ -23,5 +26,5 @@ require_once 'inc/class-utilities.php';
 // Initialize Settings
 require_once 'inc/class-settings.php';
 
-// Initialize Post Type
-require_once 'inc/class-post-type.php';
+// Initialize Plugin
+require_once 'inc/class-initialize.php';

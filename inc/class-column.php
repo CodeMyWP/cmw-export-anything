@@ -1,12 +1,43 @@
 <?php
-
 namespace CodeMyWP\Plugins\ExportAnything;
 
-use Error;
+class Column {
 
-class PostType {
+    public static $table_name_without_prefix = 'cmw_ea_columns';
 
-    public static $table_name_without_prefix = 'cmw_ea_post_types';
+    public static function add($post_type_id, $name, $key, $type) {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . self::$table_name_without_prefix;
+
+        $result = $wpdb->insert(
+            $table_name,
+            [
+                'post_type_id' => $post_type_id,
+                'name' => $name,
+                'key' => $key,
+                'type' => $type
+            ]
+        );
+
+        if ($result) {
+            return $wpdb->insert_id;
+        } else {
+            return false;
+        }
+    }
+
+    public static function update($id, $args) {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . self::$table_name_without_prefix;
+
+        return $wpdb->update(
+            $table_name,
+            $args,
+            ['id' => $id]
+        );
+    }
 
     public static function get($args = array()) {
         global $wpdb;
@@ -37,26 +68,14 @@ class PostType {
         return $wpdb->get_results($sql);
     }
 
-    public static function add($args) {
+    public static function remove($id) {
         global $wpdb;
-        $table_name = $wpdb->prefix . self::$table_name_without_prefix;
-        $result = $wpdb->insert(
-            $table_name,
-            $args
-        );
-        return $result;
-    }
 
-    public static function delete($post_type_id) {
-        global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
-        $result = $wpdb->delete(
+
+        return $wpdb->delete(
             $table_name,
-            array('id' => $post_type_id),
-            array('%d')
+            ['id' => $id]
         );
-        return $result;
     }
 }
-
-return new PostType();
