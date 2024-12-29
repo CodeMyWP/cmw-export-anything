@@ -40,6 +40,7 @@ class Initialize {
     public function initialize_tables() {
         $this->create_post_types_table();
         $this->create_columns_table();
+        $this->create_exports_table();
     }
 
     /**
@@ -78,6 +79,29 @@ class Initialize {
             name text NOT NULL,
             `key` varchar(50) NOT NULL,
             type ENUM('posts', 'postmeta') NOT NULL,
+            PRIMARY KEY  (id),
+            INDEX post_type_id (post_type_id)
+        ) $charset_collate;";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+    }
+
+    /**
+     * Create the exports table in the database.
+     */
+    public function create_exports_table() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'exports';
+
+        $charset_collate = $wpdb->get_charset_collate();
+
+        $sql = "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            post_type_id mediumint(9) NOT NULL,
+            status ENUM('processing', 'completed', 'failed') NOT NULL,
+            file_path text NOT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
             PRIMARY KEY  (id),
             INDEX post_type_id (post_type_id)
         ) $charset_collate;";

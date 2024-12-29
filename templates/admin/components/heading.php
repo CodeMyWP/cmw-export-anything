@@ -2,7 +2,7 @@
     <h4><?= apply_filters('export_anything_section_heading', $heading) ?></h4>
     <div class="actions d-flex align-items-center">
         <?php foreach($actions as $action): 
-            $action_url = admin_url('admin.php?page=export-anything&action=' . $action['key']);
+            $action_url = admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG . '&action=' . $action['key']);
             if(isset($action['args'])) {
                 $args = $action['args'];
                 foreach($args as $key => $arg) {

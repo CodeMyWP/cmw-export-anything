@@ -9,8 +9,9 @@ use CodeMyWP\Plugins\ExportAnything\Utilities;
     </div>
     <div class="post-type-actions">
         <div class="d-flex">
-            <a class="btn btn-outline-primary btn-sm" href="<?= admin_url('admin.php?page=export-anything&action=edit&id=' . $post_type->id) ?>">Edit</a>
-            <a class="btn btn-danger btn-sm ms-2" href="<?= admin_url('admin.php?page=export-anything&action=delete&id=' . $post_type->id) ?>">Delete</a>
+            <a class="btn btn-outline-primary btn-sm" href="<?= admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG . '&action=view&id=' . $post_type->id) ?>">Exports</a>
+            <a class="btn btn-outline-primary btn-sm ms-2" href="<?= admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG . '&action=edit&id=' . $post_type->id) ?>">Edit</a>
+            <a class="btn btn-danger btn-sm ms-2" href="<?= admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG . '&action=delete&id=' . $post_type->id) ?>">Delete</a>
         </div>
     </div>
 </div>

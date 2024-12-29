@@ -2,8 +2,6 @@
 
 namespace CodeMyWP\Plugins\ExportAnything;
 
-use Error;
-
 class PostType {
 
     public static $table_name_without_prefix = 'cmw_ea_post_types';

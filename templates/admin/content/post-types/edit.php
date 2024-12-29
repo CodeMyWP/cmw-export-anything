@@ -1,12 +1,17 @@
-<form method="post" action="<?= admin_url('admin.php'); ?>">
-    <input type="hidden" name="page" value="export-anything">
-    <input type="hidden" name="action" value="update">
-    <input type="hidden" name="post_type_id" id="post_type_id" value="<?= $_REQUEST['id'] ?>">
+<?php
+namespace CodeMyWP\Plugins\ExportAnything;
+
+?>
+<div>
     <div class="columns">
-        
+        <?php
+        foreach($columns as $column) {
+            Utilities::load_template('components/column', true, ['id' => $_REQUEST['id'], 'column' => $column]);
+        }
+        ?>
     </div>
     <div class="">
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button type="button" class="btn btn-outline-secondary add-column">Add Column</button>
+        <a href="<?= admin_url('?page=' . EXPORT_ANYTHING_SLUG) ?>" class="btn btn-outline-danger">Cancel</a>
+        <a href="#" class="btn btn-primary" id="add-column">Add Column</a>
     </div>
-</form>
+</div>

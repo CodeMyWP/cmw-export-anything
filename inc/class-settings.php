@@ -29,9 +29,6 @@ class Settings {
         // Add End of Post Types
         add_action('export_anything_after_post_types', [$this, 'end_post_types']);
 
-        // Add Column Modals
-        add_action('export_anything_after_settings_content', [$this, 'add_column_modal'], 10);
-
         // AJAX actions
         add_action('wp_ajax_cmw_ea_create_column', [$this, 'create_column']);
         add_action('wp_ajax_cmw_ea_save_column', [$this, 'save_column']);
@@ -46,7 +43,7 @@ class Settings {
             'Export Anything', // Page title
             'Export Anything', // Menu title
             'manage_options',    // Capability
-            'export-anything', // Menu slug
+            EXPORT_ANYTHING_SLUG, // Menu slug
             [$this, 'menu_page'], // Callback function
             'dashicons-download', // Icon URL
             6 // Position
@@ -57,15 +54,16 @@ class Settings {
      * Enqueue admin styles
      */
     public function enqueue_admin_styles($hook) {
-        if ($hook !== 'toplevel_page_export-anything') {
+        if ($hook !== 'toplevel_page_' . EXPORT_ANYTHING_SLUG) {
             return;
         }
-        wp_enqueue_style('export-anything-admin', EXPORT_ANYTHING_URL . 'assets/css/admin/admin.css', [], EXPORT_ANYTHING_VERSION);
+        wp_enqueue_style(EXPORT_ANYTHING_SLUG . '-admin', EXPORT_ANYTHING_URL . 'assets/css/admin/admin.css', [], EXPORT_ANYTHING_VERSION);
         wp_enqueue_script('bootstrap', EXPORT_ANYTHING_URL . 'node_modules/bootstrap/dist/js/bootstrap.bundle.min.js', array('jquery'), '5.1.3', true);
-        wp_enqueue_script('export-anything', EXPORT_ANYTHING_URL . 'assets/js/admin/script.js', array('jquery'), EXPORT_ANYTHING_VERSION);
-        wp_localize_script('export-anything', 'exportAnything', array(
+        wp_enqueue_script(EXPORT_ANYTHING_SLUG, EXPORT_ANYTHING_URL . 'assets/js/admin/script.js', array('jquery'), EXPORT_ANYTHING_VERSION);
+        wp_localize_script(EXPORT_ANYTHING_SLUG, 'exportAnything', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'create_column_nonce' => wp_create_nonce('create_column_nonce'),
+            'delete_column_nonce' => wp_create_nonce('delete_column_nonce'),
             'save_column_nonce' => wp_create_nonce('save_column_nonce'),
             'get_field_keys_nonce' => wp_create_nonce('get_field_keys_nonce'),
         ));
@@ -83,7 +81,7 @@ class Settings {
     }
 
     public function action_handler() {
-        if (!isset($_REQUEST['page']) || $_REQUEST['page'] !== 'export-anything') {
+        if (!isset($_REQUEST['page']) || $_REQUEST['page'] !== EXPORT_ANYTHING_SLUG) {
             return;
         }
         if(isset($_REQUEST['action'])) {
@@ -91,7 +89,7 @@ class Settings {
                 case 'save':
                     
                     if(!isset($_REQUEST['post_type']) || !isset($_REQUEST['name'])) {
-                        wp_redirect(admin_url('admin.php?page=export-anything'));
+                        wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
                         exit();
                     }
 
@@ -101,27 +99,27 @@ class Settings {
 
                     PostType::add($args);
 
-                    wp_redirect(admin_url('admin.php?page=export-anything&action=edit'));
+                    wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG . '&action=edit'));
                     exit();
 
                 break;
                 case 'update':
-                    wp_redirect(admin_url('admin.php?page=export-anything'));
+                    wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
                     exit();
                 break;
                 case 'delete':
                     if(!isset($_REQUEST['id'])) {
-                        wp_redirect(admin_url('admin.php?page=export-anything'));
+                        wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
                         exit();
                     }
 
                     PostType::delete($_REQUEST['id']);
 
-                    wp_redirect(admin_url('admin.php?page=export-anything'));
+                    wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
                     exit();
                 break;
                 case 'cancel':
-                    wp_redirect(admin_url('admin.php?page=export-anything'));
+                    wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
                     exit();
                 break;
             }
@@ -164,6 +162,7 @@ class Settings {
                 $args['wp_post_types'] = Utilities::get_wp_post_types();
             break;
             case 'edit':
+                $args['post_id'] = $_REQUEST['id'];
                 $post_type_name = PostType::get(array(
                     "columns" => array(
                         "name"
@@ -173,6 +172,18 @@ class Settings {
                     ),
                     "per_page" => 1
                 ));
+                $columns = Column::get(array(
+                    "columns" => array(
+                        "id",
+                        "name",
+                        "key",
+                        "type"
+                    ),
+                    "conditions" => array(
+                        "post_type_id" => $_REQUEST['id']
+                    )
+                ));
+                $args['columns'] = $columns;
                 $heading = 'Edit ' . $post_type_name;
                 $actions = array(
                     array(
@@ -187,6 +198,34 @@ class Settings {
                         'args' => array(
                             'id' => $_REQUEST['id']
                         )
+                    )
+                );
+            break;
+            case 'view':
+                $args['post_id'] = $_REQUEST['id'];
+                $post_type_name = PostType::get(array(
+                    "columns" => array(
+                        "name"
+                    ),
+                    "conditions" => array(
+                        "id" => $_REQUEST['id']
+                    ),
+                    "per_page" => 1
+                ));
+                $heading = $post_type_name . ' Exports';
+                $actions = array(
+                    array(
+                        'key' => 'export', 
+                        'label' => 'Export', 
+                        'type' => 'primary',
+                        'args' => array(
+                            'id' => $_REQUEST['id']
+                        )
+                    ),
+                    array(
+                        'key' => 'cancel', 
+                        'label' => 'Cancel', 
+                        'type' => 'outline-danger'
                     )
                 );
             break;
@@ -218,13 +257,15 @@ class Settings {
     }
 
     public function end_post_types() {
+        if(isset($_REQUEST['action']) && $_REQUEST['action'] === 'edit') {
+            $this->add_column_modal();
+        }
         Utilities::load_template('layout/post-types/end', true);
     }
 
     public function post_types($args) {
         $post_types = $args['post_types'];
         if(sizeof($post_types) > 0) {
-            error_log(json_encode($post_types));
             foreach($post_types as $post_type) {
                 Utilities::load_template('components/post-type', true, array('post_type' => $post_type));
             }
