@@ -14,10 +14,6 @@
                 <div class="modal-body">
                     <div class="alert alert-warning" style="display:none" id="add-column-alert" role="alert"></div>
                     <div class="mb-3">
-                        <label for="modal_column_name" class="form-label">Field Name</label>
-                        <input type="text" class="form-control" name="name" id="modal_column_name" placeholder="Field Name">
-                    </div>
-                    <div class="mb-3">
                         <label for="modal_column_type" class="form-label">Field Type</label>
                         <select class="form-control" name="type" id="modal_column_type">
                             <option value="">Select Field Type</option>
@@ -30,6 +26,10 @@
                         <select class="form-control select2" name="key" id="modal_column_key">
                             <option value="">Select Field Key</option>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal_column_name" class="form-label">Field Name</label>
+                        <input type="text" class="form-control" name="name" id="modal_column_name" placeholder="Field Name">
                     </div>
                 </div>
                 <div class="modal-footer">

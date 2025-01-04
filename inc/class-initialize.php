@@ -92,14 +92,16 @@ class Initialize {
      */
     public function create_exports_table() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'exports';
+        $table_name = $wpdb->prefix . Export::$table_name_without_prefix;
 
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             post_type_id mediumint(9) NOT NULL,
-            status ENUM('processing', 'completed', 'failed') NOT NULL,
+            status ENUM('pending','processing','completed','failed') NOT NULL,
+            page int NOT NULL,
+            per_page int NOT NULL,
             file_path text NOT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
             PRIMARY KEY  (id),
@@ -109,7 +111,7 @@ class Initialize {
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
     }
-
+    
     /**
      * Handle the plugin upgrade process to initialize tables.
      *
@@ -122,5 +124,5 @@ class Initialize {
         }
     }
 }
+
 return new Initialize();
-?>

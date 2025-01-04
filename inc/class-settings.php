@@ -67,6 +67,11 @@ class Settings {
             'save_column_nonce' => wp_create_nonce('save_column_nonce'),
             'get_field_keys_nonce' => wp_create_nonce('get_field_keys_nonce'),
         ));
+        wp_enqueue_script(EXPORT_ANYTHING_SLUG . '_export', EXPORT_ANYTHING_URL . 'assets/js/admin/export.js', array('jquery'), EXPORT_ANYTHING_VERSION, true);
+        wp_localize_script(EXPORT_ANYTHING_SLUG . '_export', 'exportAnythingExport', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('cmw-ea-export'),
+        ));
         wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'), '4.1.0-rc.0', true);
         wp_enqueue_style('select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', array(), '4.1.0-rc.0');
     }
@@ -118,6 +123,10 @@ class Settings {
                     wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
                     exit();
                 break;
+                case 'export':
+                    wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
+                    exit();
+                break;
                 case 'cancel':
                     wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
                     exit();
@@ -145,6 +154,9 @@ class Settings {
     public function content() {
         $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
         $this->action_content($action);
+        if(!empty($action) && $action === 'edit') {
+            $this->add_column_modal();
+        }
     } 
 
     public function action_content($action) {
@@ -203,6 +215,8 @@ class Settings {
             break;
             case 'view':
                 $args['post_id'] = $_REQUEST['id'];
+                $exports = Export::get($_REQUEST['id']);
+                $args['exports'] = $exports;
                 $post_type_name = PostType::get(array(
                     "columns" => array(
                         "name"
@@ -220,6 +234,9 @@ class Settings {
                         'type' => 'primary',
                         'args' => array(
                             'id' => $_REQUEST['id']
+                        ),
+                        'data' => array(
+                            'post_type_id' => $_REQUEST['id']
                         )
                     ),
                     array(
@@ -257,9 +274,6 @@ class Settings {
     }
 
     public function end_post_types() {
-        if(isset($_REQUEST['action']) && $_REQUEST['action'] === 'edit') {
-            $this->add_column_modal();
-        }
         Utilities::load_template('layout/post-types/end', true);
     }
 

@@ -21,6 +21,9 @@ require_once 'inc/class-post-type.php';
 // Initialize Column
 require_once 'inc/class-column.php';
 
+// Initialize Export
+require_once 'inc/class-export.php';
+
 // Initialize Utilities
 require_once 'inc/class-utilities.php';
 

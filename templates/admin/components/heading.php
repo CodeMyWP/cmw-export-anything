@@ -9,8 +9,15 @@
                     $action_url .= '&' . $key . "=" . $arg;
                 }
             }
+            $data_attr = '';
+            if(isset($action['data'])) {
+                $data = $action['data'];
+                foreach($data as $key => $value) {
+                    $data_attr .= ' data-' . $key . '="' . $value . '"';
+                }
+            }
             ?>
-            <a href="<?= $action_url ?>" class="btn btn-<?= $action['type'] ?> <?= $action['key'] ?>"><?= $action['label'] ?></a>
+            <a href="<?= $action_url ?>" class="btn btn-<?= $action['type'] ?> <?= $action['key'] ?>" <?= $data_attr ?>><?= $action['label'] ?></a>
         <?php endforeach; ?>
     </div>
 </div>
