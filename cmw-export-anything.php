@@ -32,3 +32,6 @@ require_once 'inc/class-settings.php';
 
 // Initialize Plugin
 require_once 'inc/class-initialize.php';
+
+// Initialize CLI
+require_once 'inc/class-cli.php';
