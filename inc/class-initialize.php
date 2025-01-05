@@ -104,6 +104,7 @@ class Initialize {
             per_page int NOT NULL,
             file_path text NOT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
             PRIMARY KEY  (id),
             INDEX post_type_id (post_type_id)
         ) $charset_collate;";

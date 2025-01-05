@@ -154,10 +154,19 @@ class Settings {
     public function content() {
         $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
         $this->action_content($action);
-        if(!empty($action) && $action === 'edit') {
-            $this->add_column_modal();
+        if(!empty($action)) {
+            switch($action) {
+                case 'add':
+                break;
+                case 'edit':
+                    $this->add_column_modal();
+                break;
+                case 'view':
+                    $this->export_progress_modal();
+                break;
+            }
         }
-    } 
+    }
 
     public function action_content($action) {
         $args = array();
@@ -200,8 +209,8 @@ class Settings {
                 $actions = array(
                     array(
                         'key' => 'cancel', 
-                        'label' => 'Cancel', 
-                        'type' => 'outline-danger'
+                        'label' => 'Go Back', 
+                        'type' => 'secondary'
                     ),
                     array(
                         'key' => 'delete', 
@@ -215,7 +224,11 @@ class Settings {
             break;
             case 'view':
                 $args['post_id'] = $_REQUEST['id'];
-                $exports = Export::get($_REQUEST['id']);
+                $exports = Export::get(array(
+                    "conditions" => array(
+                        "post_type_id" => $_REQUEST['id']
+                    )
+                ));
                 $args['exports'] = $exports;
                 $post_type_name = PostType::get(array(
                     "columns" => array(
@@ -229,8 +242,13 @@ class Settings {
                 $heading = $post_type_name . ' Exports';
                 $actions = array(
                     array(
+                        'key' => 'cancel', 
+                        'label' => 'Go Back', 
+                        'type' => 'secondary'
+                    ),
+                    array(
                         'key' => 'export', 
-                        'label' => 'Export', 
+                        'label' => 'Add Export Job', 
                         'type' => 'primary',
                         'args' => array(
                             'id' => $_REQUEST['id']
@@ -238,11 +256,6 @@ class Settings {
                         'data' => array(
                             'post_type_id' => $_REQUEST['id']
                         )
-                    ),
-                    array(
-                        'key' => 'cancel', 
-                        'label' => 'Cancel', 
-                        'type' => 'outline-danger'
                     )
                 );
             break;
@@ -381,6 +394,10 @@ class Settings {
 
     public function add_column_modal() {
         Utilities::load_template('content/columns/modal', true);
+    }
+
+    public function export_progress_modal() {
+        Utilities::load_template('content/exports/modal', true);
     }
 
 }

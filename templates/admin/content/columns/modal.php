@@ -1,6 +1,6 @@
 <!-- Add Column Modal -->
 <div class="modal fade" id="addColumnModal" tabindex="-1" aria-labelledby="addColumnModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form action="<?= admin_url('admin-ajax.php') ?>" class="add-column-form" method="post">
                 <input type="hidden" name="action" value="cmw_ea_add_column">
@@ -8,7 +8,7 @@
                 <input type="hidden" name="post_type_id" id="post_type_id" value="<?= $_REQUEST['id'] ?>">
                 <input type="hidden" name="id" id="id" value="">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addColumnModalLabel">Add Column</h5>
+                    <h5 class="modal-title" id="addColumnModalLabel">Add Field</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

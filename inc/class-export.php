@@ -5,9 +5,10 @@ class Export {
 
     public static $table_name_without_prefix = 'cmw_ea_exports';
 
-    public function __construct($ajax = true) {
-        if($ajax) {
+    public function __construct($cron = false) {
+        if(!$cron) {
             add_action('wp_ajax_cmw_ea_regsiter_export', array($this, 'register'));
+            add_action('admin_post_cmw_ea_download_export', array($this, 'download'));
         }
     }
 
@@ -41,6 +42,8 @@ class Export {
                 }
             }
         }
+
+        $sql .= " ORDER BY id DESC";
         
         if(isset($args['columns']) && isset($args['per_page'])) {
             if(sizeof($args['columns']) == 1 && $args['per_page'] == 1) {
@@ -53,7 +56,7 @@ class Export {
     public static function update($id, $data) {
         global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
-        return $wpdb->update($table_name, $data, array('id' => $id), array('%d'));
+        return $wpdb->update($table_name, $data, array('id' => $id));
     }
 
     public static function delete($id) {
@@ -106,7 +109,9 @@ class Export {
 
     public function process() {
         $exports = self::get(array(
-            'status' => 'pending'
+            'conditions' => array(
+                'status' => "'pending'"
+            )
         ));
 
         foreach ($exports as $export) {
@@ -218,6 +223,42 @@ class Export {
         }
 
         fclose($file);
+    }
+
+    public function download() {
+        if (!isset($_POST['export_id'])) {
+            wp_die('Export ID is required.');
+        }
+
+        if (!current_user_can('export')) {
+            wp_die('You do not have permission to download exports.');
+        }
+
+        $export_id = $_POST['export_id'];
+
+        $export = self::get(array(
+            'columns' => array('file_path'),
+            'conditions' => array(
+                'id' => $export_id
+            )
+        ));
+
+        if (sizeof($export) == 0) {
+            wp_die('Export not found.');
+        }
+
+        $file_path = $export[0]->file_path;
+
+        if (!file_exists($file_path)) {
+            wp_die('File not found.');
+        }
+
+        header('Content-Type: application/csv');
+        header('Content-Disposition: attachment; filename="' . basename($file_path) . '"');
+        header('Content-Length: ' . filesize($file_path));
+
+        readfile($file_path);
+        exit;
     }
 }
 
