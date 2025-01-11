@@ -28,7 +28,7 @@ class Utilities {
         $post_types = get_transient('cmw_ea_wp_post_types');
         if(!$post_types) {
             $post_types = get_post_types(array('public' => true), 'objects');
-            set_transient('cmw_ea_wp_post_types', $post_types, 60 * 60 * 356);
+            set_transient('cmw_ea_wp_post_types', $post_types, 60 * 60 * 24 * 365);
         }
         return $post_types;
     }

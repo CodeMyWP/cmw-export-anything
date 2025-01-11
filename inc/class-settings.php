@@ -70,7 +70,8 @@ class Settings {
         wp_enqueue_script(EXPORT_ANYTHING_SLUG . '_export', EXPORT_ANYTHING_URL . 'assets/js/admin/export.js', array('jquery'), EXPORT_ANYTHING_VERSION, true);
         wp_localize_script(EXPORT_ANYTHING_SLUG . '_export', 'exportAnythingExport', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('cmw-ea-register-export'),
+            'register_nonce' => wp_create_nonce('cmw-ea-register-export'),
+            'start_nonce' => wp_create_nonce('cmw-ea-start-export'),
         ));
         wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'), '4.1.0-rc.0', true);
         wp_enqueue_style('select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', array(), '4.1.0-rc.0');
