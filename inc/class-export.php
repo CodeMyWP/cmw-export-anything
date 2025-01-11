@@ -1,12 +1,27 @@
 <?php
 namespace CodeMyWP\Plugins\ExportAnything;
 
-use Error;
 
+// Prevent direct access to the file
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+/**
+ * Class Export
+ * Handles the export functionality for the plugin.
+ */
 class Export {
 
+    /**
+     * @var string The table name without the WordPress prefix.
+     */
     public static $table_name_without_prefix = 'cmw_ea_exports';
 
+    /**
+     * Export constructor.
+     * @param bool $cron Whether the constructor is called for a cron job.
+     */
     public function __construct($cron = false) {
         if(!$cron) {
 
@@ -18,9 +33,18 @@ class Export {
 
             // Download Export
             add_action('admin_post_cmw_ea_download_export', array($this, 'download'));
+
+            // Deregister Export
+            add_action('wp_ajax_cmw_ea_deregister_export', array($this, 'deregister'));
         }
     }
 
+    /**
+     * Add a new export record to the database.
+     *
+     * @param array $data The data to insert.
+     * @return int The ID of the inserted record.
+     */
     public static function add($data) {
         global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
@@ -28,6 +52,12 @@ class Export {
         return $wpdb->insert_id;
     }
 
+    /**
+     * Retrieve export records from the database.
+     *
+     * @param array $args The arguments for retrieving records.
+     * @return mixed The retrieved records.
+     */
     public static function get($args) {
         global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
@@ -71,42 +101,58 @@ class Export {
         return $wpdb->get_results($sql);
     }
 
+    /**
+     * Update an existing export record in the database.
+     *
+     * @param int $id The ID of the record to update.
+     * @param array $data The data to update.
+     * @return int|false The number of rows updated, or false on error.
+     */
     public static function update($id, $data) {
         global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
         return $wpdb->update($table_name, $data, array('id' => $id));
     }
 
+    /**
+     * Delete an export record from the database.
+     *
+     * @param int $id The ID of the record to delete.
+     * @return int|false The number of rows deleted, or false on error.
+     */
     public static function delete($id) {
         global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
         return $wpdb->delete($table_name, array('id' => $id), array('%d'));
     }
 
+    /**
+     * Register a new export via AJAX.
+     */
     public function register() {
         check_ajax_referer('cmw-ea-register-export', 'nonce');
 
         if(!isset($_POST['post_type_id'])) {
             wp_send_json_error(
                 array(
-                    'message' => 'Post type ID is required.'
+                    'message' => esc_html__('Post type ID is required.', 'cmw-export-anything')
                 )
             );
         }
 
         if(!current_user_can('export')) {
             wp_send_json_error(array(
-                'message' => 'You do not have permission to export.'
+                'message' => esc_html__('You do not have permission to export.', 'cmw-export-anything')
             ));
         }
 
-        $post_type_id = $_POST['post_type_id'];
+        $post_type_id = sanitize_text_field($_POST['post_type_id']);
 
         // Create a CSV File in Uploads DIR
         $upload_dir = wp_upload_dir();
         $exports_dir = $upload_dir['basedir'] . '/cmw-ea-exports/';
         if(!file_exists($exports_dir)) {
-            mkdir($exports_dir);
+            wp_mkdir_p($exports_dir);
         }
         $file_path = $exports_dir . uniqid() . '.csv';
 
@@ -120,27 +166,74 @@ class Export {
         ));
 
         wp_send_json_success(array(
-            'message' => 'Export has been registered.',
+            'message' => esc_html__('Export has been registered.', 'cmw-export-anything'),
             'export_id' => $export_id
         ));
     }
 
-    public function start() {
-        check_ajax_referer('cmw-ea-start-export', 'nonce');
+    /**
+     * Deregister an export via AJAX.
+     */
+    public function deregister() {
+        check_ajax_referer('cmw-ea-deregister-export', 'nonce');
 
         if(!isset($_POST['export_id'])) {
             wp_send_json_error(array(
-                'message' => 'Export ID is required.'
+                'message' => esc_html__('Export ID is required.', 'cmw-export-anything')
             ));
         }
 
         if(!current_user_can('export')) {
             wp_send_json_error(array(
-                'message' => 'You do not have permission to process exports.'
+                'message' => esc_html__('You do not have permission to deregister exports.', 'cmw-export-anything')
             ));
         }
 
-        $export_id = $_POST['export_id'];
+        $export_id = sanitize_text_field($_POST['export_id']);
+
+        $export = self::get(array(
+            'per_page' => 1,
+            'conditions' => array(
+                'id' => $export_id
+            )
+        ));
+
+        if(!is_object($export)) {
+            wp_send_json_error(array(
+                'message' => esc_html__('Export not found.', 'cmw-export-anything')
+            ));
+        }
+
+        if (file_exists($export->file_path)) {
+            unlink($export->file_path);
+        }
+
+        $this->delete($export_id);
+
+        wp_send_json_success(array(
+            'message' => esc_html__('Export has been deregistered.', 'cmw-export-anything')
+        ));
+    }
+
+    /**
+     * Start processing an export via AJAX.
+     */
+    public function start() {
+        check_ajax_referer('cmw-ea-start-export', 'nonce');
+
+        if(!isset($_POST['export_id'])) {
+            wp_send_json_error(array(
+                'message' => esc_html__('Export ID is required.', 'cmw-export-anything')
+            ));
+        }
+
+        if(!current_user_can('export')) {
+            wp_send_json_error(array(
+                'message' => esc_html__('You do not have permission to process exports.', 'cmw-export-anything')
+            ));
+        }
+
+        $export_id = sanitize_text_field($_POST['export_id']);
         $export = self::get(array(
             'per_page' => 1,
             'conditions' => array(
@@ -150,7 +243,7 @@ class Export {
 
         if($export->status != 'pending') {
             wp_send_json_error(array(
-                'message' => 'Export is not pending.'
+                'message' => esc_html__('Export is not pending.', 'cmw-export-anything')
             ));
         }
 
@@ -164,15 +257,18 @@ class Export {
         );
 
         if($export->status == 'completed') {
-            $response['message'] = 'Congratulations! Your export is ready for download.';
-            $response['download_url'] = admin_url('admin-post.php?action=cmw_ea_download_export&export_id=' . $export_id);
+            $response['message'] = esc_html__('Congratulations! Your export is ready for download.', 'cmw-export-anything');
+            $response['download_url'] = esc_url_raw(admin_url('admin-post.php?action=cmw_ea_download_export&export_id=' . $export_id));
         } else {
-            $response['message'] = 'Please wait the export is in progress.';
+            $response['message'] = esc_html__('Please wait the export is in progress.', 'cmw-export-anything');
         }
 
         wp_send_json_success($response);
     }
 
+    /**
+     * Export all pending exports.
+     */
     public function export_all() {
         $exports = self::get(array(
             'conditions' => array(
@@ -185,6 +281,12 @@ class Export {
         }
     }
 
+    /**
+     * Process a single export.
+     *
+     * @param object $export The export object.
+     * @return object The updated export object.
+     */
     public function export($export) {
         $export_id = $export->id;
 
@@ -231,6 +333,12 @@ class Export {
         return $export;
     }
 
+    /**
+     * Get the total number of items for a post type.
+     *
+     * @param int $post_type_id The post type ID.
+     * @return int The total number of items.
+     */
     public function total($post_type_id) {
         $post_type = PostType::get(array(
             'per_page' => 1,
@@ -243,6 +351,15 @@ class Export {
         return $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s", $post_type));
     }
 
+    /**
+     * Query the database for export data.
+     *
+     * @param string $post_type The post type.
+     * @param array $columns The columns to select.
+     * @param int $page The page number.
+     * @param int $per_page The number of items per page.
+     * @return array The query results.
+     */
     public function query($post_type, $columns, $page = 1, $per_page = 100) {
 
         $offset = ($page - 1) * $per_page;
@@ -283,6 +400,12 @@ class Export {
         return $results;
     }
 
+    /**
+     * Update the export file with new data.
+     *
+     * @param string $file_path The file path.
+     * @param array $data The data to write.
+     */
     public function update_file($file_path, $data) {
         if (!file_exists($file_path)) {
             $file = fopen($file_path, 'w');
@@ -307,16 +430,19 @@ class Export {
         fclose($file);
     }
 
+    /**
+     * Download the export file.
+     */
     public function download() {
         if (!isset($_REQUEST['export_id'])) {
-            wp_die('Export ID is required.');
+            wp_die(esc_html__('Export ID is required.', 'cmw-export-anything'));
         }
 
         if (!current_user_can('export')) {
-            wp_die('You do not have permission to download exports.');
+            wp_die(esc_html__('You do not have permission to download exports.', 'cmw-export-anything'));
         }
 
-        $export_id = $_REQUEST['export_id'];
+        $export_id = sanitize_text_field($_REQUEST['export_id']);
 
         $export = self::get(array(
             'columns' => array('file_path'),
@@ -326,13 +452,13 @@ class Export {
         ));
 
         if (sizeof($export) == 0) {
-            wp_die('Export not found.');
+            wp_die(esc_html__('Export not found.', 'cmw-export-anything'));
         }
 
         $file_path = $export[0]->file_path;
 
         if (!file_exists($file_path)) {
-            wp_die('File not found.');
+            wp_die(esc_html__('File not found.', 'cmw-export-anything'));
         }
 
         header('Content-Type: application/csv');

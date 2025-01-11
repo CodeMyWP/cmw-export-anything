@@ -18,10 +18,10 @@ class Column {
         $result = $wpdb->insert(
             $table_name,
             [
-                'post_type_id' => $post_type_id,
-                'name' => $name,
-                'key' => $key,
-                'type' => $type
+                'post_type_id' => sanitize_text_field($post_type_id),
+                'name' => sanitize_text_field($name),
+                'key' => sanitize_text_field($key),
+                'type' => sanitize_text_field($type)
             ]
         );
 
@@ -40,7 +40,7 @@ class Column {
         return $wpdb->update(
             $table_name,
             $args,
-            ['id' => $id]
+            ['id' => intval($id)]
         );
     }
 
@@ -61,9 +61,9 @@ class Column {
             $conditions = $args['conditions'];
             foreach($conditions as $key => $condition) {
                 if(!is_array($condition)) {
-                    $sql .= " AND {$key}={$condition}";
+                    $sql .= $wpdb->prepare(" AND {$key}=%s", $condition);
                 } else {
-                    $sql .= " AND {$condition['key']}{$condition['operator']}{$condition['value']}";
+                    $sql .= $wpdb->prepare(" AND {$condition['key']}{$condition['operator']}%s", $condition['value']);
                 }
             }
         }
@@ -83,7 +83,7 @@ class Column {
 
         return $wpdb->delete(
             $table_name,
-            ['id' => $id]
+            ['id' => intval($id)]
         );
     }
 
@@ -91,7 +91,7 @@ class Column {
         check_ajax_referer('cmw_ea_add_column_nonce', 'security');
 
         if (!isset($_POST['post_type_id'], $_POST['name'], $_POST['key'], $_POST['type']) || empty($_POST['post_type_id']) || empty($_POST['name']) || empty($_POST['key']) || empty($_POST['type'])) {
-            wp_send_json_error(['message' => 'Missing required parameters']);
+            wp_send_json_error(['message' => __('Missing required parameters', 'export-anything')]);
         }
 
         $post_type_id = sanitize_text_field($_POST['post_type_id']);
@@ -107,16 +107,16 @@ class Column {
                 'type' => $type
             ]);
             if($result) {
-                wp_send_json_success(['message' => 'Column updated successfully']);
+                wp_send_json_success(['message' => __('Column updated successfully', 'export-anything')]);
             } else {
-                wp_send_json_error(['message' => 'Failed to update column']);
+                wp_send_json_error(['message' => __('Failed to update column', 'export-anything')]);
             }
         } else {
             $result = self::add($post_type_id, $name, $key, $type);
             if ($result) {
-                wp_send_json_success(['message' => 'Column added successfully', 'id' => $result]);
+                wp_send_json_success(['message' => __('Column added successfully', 'export-anything'), 'id' => $result]);
             } else {
-                wp_send_json_error(['message' => 'Failed to add column']);
+                wp_send_json_error(['message' => __('Failed to add column', 'export-anything')]);
             }
         }
     }
@@ -125,7 +125,7 @@ class Column {
         check_ajax_referer('delete_column_nonce', 'security');
 
         if (!isset($_POST['id']) || empty($_POST['id'])) {
-            wp_send_json_error(['message' => 'Missing required parameter: id']);
+            wp_send_json_error(['message' => __('Missing required parameter: id', 'export-anything')]);
         }
 
         $id = intval($_POST['id']);
@@ -133,9 +133,9 @@ class Column {
         $result = self::remove($id);
 
         if ($result) {
-            wp_send_json_success(['message' => 'Column deleted successfully']);
+            wp_send_json_success(['message' => __('Column deleted successfully', 'export-anything')]);
         } else {
-            wp_send_json_error(['message' => 'Failed to delete column']);
+            wp_send_json_error(['message' => __('Failed to delete column', 'export-anything')]);
         }
     }
 

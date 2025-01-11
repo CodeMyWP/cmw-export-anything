@@ -1,6 +1,7 @@
 <form action="<?= admin_url('admin.php'); ?>" method="post" class="form-horizontal">
     <input type="hidden" name="page" value="<?= EXPORT_ANYTHING_SLUG ?>">
     <input type="hidden" name="action" value="save">
+    <?php wp_nonce_field('save_post_type', '_wpnonce'); ?>
     <div class="row mb-3">
         <label for="name" class="col-sm-2 control-label">Name</label>
         <div class="col-sm-10">

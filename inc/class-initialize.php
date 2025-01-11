@@ -2,12 +2,27 @@
 
 namespace CodeMyWP\Plugins\ExportAnything;
 
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
+/**
+ * Class Initialize
+ *
+ * Handles the initialization, activation, deactivation, and uninstallation of the plugin.
+ */
 class Initialize {
     
+    /**
+     * Initialize constructor.
+     *
+     * Registers activation, deactivation, and uninstall hooks, and adds action for plugin upgrade.
+     */
     public function __construct() {
         // Register activation and deactivation hooks
         register_activation_hook(EXPORT_ANYTHING_FILE, [$this, 'activate']);
         register_deactivation_hook(EXPORT_ANYTHING_FILE, [$this, 'deactivate']);
+        register_uninstall_hook(EXPORT_ANYTHING_FILE, [__CLASS__, 'uninstall']);
 
         // Add action for plugin upgrade
         add_action('upgrader_process_complete', [$this, 'upgrade'], 10, 2);
@@ -15,6 +30,8 @@ class Initialize {
 
     /**
      * Activate the plugin and initialize tables.
+     *
+     * @return void
      */
     public function activate() {
         $this->initialize_tables();
@@ -22,20 +39,36 @@ class Initialize {
 
     /**
      * Deactivate the plugin.
+     *
+     * @return void
      */
     public function deactivate() {
         // Deactivation code here
     }
 
     /**
-     * Uninstall the plugin.
+     * Uninstall the plugin - Remove all tables
+     *
+     * @return void
      */
-    public function uninstall() {
-        // Uninstall code here
+    public static function uninstall() {
+        global $wpdb;
+
+        $tables = [
+            $wpdb->prefix . PostType::$table_name_without_prefix,
+            $wpdb->prefix . Column::$table_name_without_prefix,
+            $wpdb->prefix . Export::$table_name_without_prefix,
+        ];
+
+        foreach ($tables as $table) {
+            $wpdb->query("DROP TABLE IF EXISTS $table");
+        }
     }
 
     /**
      * Initialize the necessary tables.
+     *
+     * @return void
      */
     public function initialize_tables() {
         $this->create_post_types_table();
@@ -45,6 +78,8 @@ class Initialize {
 
     /**
      * Create the post types table in the database.
+     *
+     * @return void
      */
     public function create_post_types_table() {
         global $wpdb;
@@ -66,6 +101,8 @@ class Initialize {
 
     /**
      * Create the columns table in the database.
+     *
+     * @return void
      */
     public function create_columns_table() {
         global $wpdb;
@@ -89,6 +126,8 @@ class Initialize {
 
     /**
      * Create the exports table in the database.
+     *
+     * @return void
      */
     public function create_exports_table() {
         global $wpdb;
@@ -118,6 +157,7 @@ class Initialize {
      *
      * @param object $upgrader_object The upgrader object.
      * @param array $options The options for the upgrade process.
+     * @return void
      */
     public function upgrade($upgrader_object, $options) {
         if ($options['action'] == 'update' && $options['type'] == 'plugin') {

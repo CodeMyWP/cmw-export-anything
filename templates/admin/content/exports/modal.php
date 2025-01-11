@@ -14,7 +14,7 @@
             </div>
             <div class="modal-footer">
                 <a href="#" class="btn btn-success download-export d-none">Download</a>
-                <a href="#" class="btn btn-secondary cancel-export" data-bs-dismiss="modal">Pause Export</button>
+                <a href="#" class="btn btn-secondary cancel-export" data-bs-dismiss="modal">Pause Export</a>
             </div>
         </div>
     </div>

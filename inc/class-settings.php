@@ -2,12 +2,12 @@
 
 namespace CodeMyWP\Plugins\ExportAnything;
 
-use ParagonIE\Sodium\Core\Util;
-
 class Settings {
 
+    /**
+     * Constructor to initialize hooks
+     */
     public function __construct() {
-
         // Add Menu Page
         add_action('admin_menu', [$this, 'add_admin_menu']);
 
@@ -40,8 +40,8 @@ class Settings {
      */
     public function add_admin_menu() {
         add_menu_page(
-            'Export Anything', // Page title
-            'Export Anything', // Menu title
+            __('Export Anything', 'export-anything'), // Page title
+            __('Export Anything', 'export-anything'), // Menu title
             'manage_options',    // Capability
             EXPORT_ANYTHING_SLUG, // Menu slug
             [$this, 'menu_page'], // Callback function
@@ -52,6 +52,8 @@ class Settings {
 
     /**
      * Enqueue admin styles
+     *
+     * @param string $hook The current admin page.
      */
     public function enqueue_admin_styles($hook) {
         if ($hook !== 'toplevel_page_' . EXPORT_ANYTHING_SLUG) {
@@ -72,6 +74,7 @@ class Settings {
             'ajax_url' => admin_url('admin-ajax.php'),
             'register_nonce' => wp_create_nonce('cmw-ea-register-export'),
             'start_nonce' => wp_create_nonce('cmw-ea-start-export'),
+            'deregister_nonce' => wp_create_nonce('cmw-ea-deregister-export'),
         ));
         wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'), '4.1.0-rc.0', true);
         wp_enqueue_style('select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', array(), '4.1.0-rc.0');
@@ -86,6 +89,9 @@ class Settings {
         $this->footer();
     }
 
+    /**
+     * Action handler
+     */
     public function action_handler() {
         if (!isset($_REQUEST['page']) || $_REQUEST['page'] !== EXPORT_ANYTHING_SLUG) {
             return;
@@ -93,38 +99,43 @@ class Settings {
         if(isset($_REQUEST['action'])) {
             switch($_REQUEST['action']) {
                 case 'save':
+                    // Verify nonce
+                    if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'save_post_type')) {
+                        wp_die(__('Nonce verification failed', 'export-anything'));
+                    }
                     
+                    // Check required parameters
                     if(!isset($_REQUEST['post_type']) || !isset($_REQUEST['name'])) {
                         wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
                         exit();
                     }
 
                     $args = array();
-                    $args['name'] = $_REQUEST['name'];
-                    $args['post_type'] = $_REQUEST['post_type'];
+                    $args['name'] = sanitize_text_field($_REQUEST['name']);
+                    $args['post_type'] = sanitize_text_field($_REQUEST['post_type']);
 
-                    PostType::add($args);
+                    // Add post type
+                    $id = PostType::add($args);
 
-                    wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG . '&action=edit'));
+                    wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG . '&action=edit&id=' . $id));
                     exit();
 
-                break;
-                case 'update':
-                    wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
-                    exit();
                 break;
                 case 'delete':
+                    // Verify nonce
+                    if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'delete_post_type')) {
+                        wp_die(__('Nonce verification failed', 'export-anything'));
+                    }
+
+                    // Check required parameters
                     if(!isset($_REQUEST['id'])) {
                         wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
                         exit();
                     }
 
-                    PostType::delete($_REQUEST['id']);
+                    // Delete post type
+                    PostType::delete(intval($_REQUEST['id']));
 
-                    wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
-                    exit();
-                break;
-                case 'export':
                     wp_redirect(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG));
                     exit();
                 break;
@@ -136,24 +147,39 @@ class Settings {
         }
     }
 
+    /**
+     * Load settings template
+     */
     public function settings() {
         Utilities::load_template('content/settings', true);
     }
 
+    /**
+     * Load header template
+     */
     public function header() {
         Utilities::load_template('layout/partials/header', true);
     }
 
+    /**
+     * Load footer template
+     */
     public function footer() {
         Utilities::load_template('layout/partials/footer', true);
     }
 
+    /**
+     * Load actions template
+     */
     public function actions() {
         Utilities::load_template('components/actions', true);
     }
 
+    /**
+     * Load content based on action
+     */
     public function content() {
-        $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
+        $action = isset($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) : '';
         $this->action_content($action);
         if(!empty($action)) {
             switch($action) {
@@ -169,28 +195,33 @@ class Settings {
         }
     }
 
+    /**
+     * Load action-specific content
+     *
+     * @param string $action The action to load content for.
+     */
     public function action_content($action) {
         $args = array();
         switch($action) {
             case 'add':
-                $heading = 'Add Post Type';
+                $heading = __('Add Post Type', 'export-anything');
                 $actions = array(
                     array(
                         'key' => 'cancel', 
-                        'label' => 'Cancel', 
+                        'label' => __('Cancel', 'export-anything'), 
                         'type' => 'outline-danger'
                     )
                 );
                 $args['wp_post_types'] = Utilities::get_wp_post_types();
             break;
             case 'edit':
-                $args['post_id'] = $_REQUEST['id'];
+                $args['post_id'] = intval($_REQUEST['id']);
                 $post_type_name = PostType::get(array(
                     "columns" => array(
                         "name"
                     ),
                     "conditions" => array(
-                        "id" => $_REQUEST['id']
+                        "id" => intval($_REQUEST['id'])
                     ),
                     "per_page" => 1
                 ));
@@ -202,32 +233,33 @@ class Settings {
                         "type"
                     ),
                     "conditions" => array(
-                        "post_type_id" => $_REQUEST['id']
+                        "post_type_id" => intval($_REQUEST['id'])
                     )
                 ));
                 $args['columns'] = $columns;
-                $heading = 'Edit ' . $post_type_name;
+                $heading = __('Edit ', 'export-anything') . $post_type_name;
                 $actions = array(
                     array(
                         'key' => 'cancel', 
-                        'label' => 'Go Back', 
+                        'label' => __('Go Back', 'export-anything'), 
                         'type' => 'secondary'
                     ),
                     array(
                         'key' => 'delete', 
-                        'label' => 'Delete', 
+                        'label' => __('Delete', 'export-anything'), 
                         'type' => 'danger',
                         'args' => array(
-                            'id' => $_REQUEST['id']
+                            'id' => intval($_REQUEST['id']),
+                            '_wpnonce' => wp_create_nonce('delete_post_type')
                         )
                     )
                 );
             break;
             case 'view':
-                $args['post_id'] = $_REQUEST['id'];
+                $args['post_id'] = intval($_REQUEST['id']);
                 $exports = Export::get(array(
                     "conditions" => array(
-                        "post_type_id" => $_REQUEST['id']
+                        "post_type_id" => intval($_REQUEST['id'])
                     )
                 ));
                 $args['exports'] = $exports;
@@ -236,37 +268,37 @@ class Settings {
                         "name"
                     ),
                     "conditions" => array(
-                        "id" => $_REQUEST['id']
+                        "id" => intval($_REQUEST['id'])
                     ),
                     "per_page" => 1
                 ));
-                $heading = $post_type_name . ' Exports';
+                $heading = $post_type_name . __(' Exports', 'export-anything');
                 $actions = array(
                     array(
                         'key' => 'cancel', 
-                        'label' => 'Go Back', 
+                        'label' => __('Go Back', 'export-anything'), 
                         'type' => 'secondary'
                     ),
                     array(
                         'key' => 'export', 
-                        'label' => 'Add Export Job', 
+                        'label' => __('Add Export Job', 'export-anything'), 
                         'type' => 'primary',
                         'args' => array(
-                            'id' => $_REQUEST['id']
+                            'id' => intval($_REQUEST['id'])
                         ),
                         'data' => array(
-                            'post_type_id' => $_REQUEST['id']
+                            'post_type_id' => intval($_REQUEST['id'])
                         )
                     )
                 );
             break;
             default:
                 $args['post_types'] = PostType::get();
-                $heading = 'Post Types';
+                $heading = __('Post Types', 'export-anything');
                 $actions = array(
                     array(
                         'key' => 'add', 
-                        'label' => 'Add Post Type', 
+                        'label' => __('Add Post Type', 'export-anything'), 
                         'type' => 'primary'
                     )
                 );
@@ -283,14 +315,25 @@ class Settings {
         }
     }
 
+    /**
+     * Load start post types template
+     */
     public function start_post_types() {
         Utilities::load_template('layout/post-types/start', true);
     }
 
+    /**
+     * Load end post types template
+     */
     public function end_post_types() {
         Utilities::load_template('layout/post-types/end', true);
     }
 
+    /**
+     * Load post types template
+     *
+     * @param array $args Arguments for loading post types.
+     */
     public function post_types($args) {
         $post_types = $args['post_types'];
         if(sizeof($post_types) > 0) {
@@ -302,16 +345,22 @@ class Settings {
         }
     }
 
+    /**
+     * Placeholder for after content actions
+     */
     public function after_content() {
-        
+        // Placeholder for after content actions
     }
 
+    /**
+     * Handle AJAX request to create a column
+     */
     public function create_column() {
         check_ajax_referer('create_column_nonce', 'nonce');
 
         if (!isset($_POST['post_type_id']) || !isset($_POST['name']) || !isset($_POST['key']) || !isset($_POST['type'])) {
             wp_send_json_error(array(
-                'message' => 'Missing required parameters'
+                'message' => __('Missing required parameters', 'export-anything')
             ));
         }
 
@@ -332,17 +381,20 @@ class Settings {
             ));
         } else {
             wp_send_json_error(array(
-                'message' => 'Something went wrong.'
+                'message' => __('Something went wrong.', 'export-anything')
             ));
         }
     }
 
+    /**
+     * Handle AJAX request to save a column
+     */
     public function save_column() {
         check_ajax_referer('save_column_nonce', 'nonce');
 
         if (!isset($_POST['id']) || !isset($_POST['post_type_id']) || !isset($_POST['name']) || !isset($_POST['key']) || !isset($_POST['type'])) {
             wp_send_json_error(array(
-                'message' => 'Missing required parameters'
+                'message' => __('Missing required parameters', 'export-anything')
             ));
         }
 
@@ -359,21 +411,24 @@ class Settings {
 
         if ($result !== false) {
             wp_send_json_success(array(
-                'message' => 'Column updated'
+                'message' => __('Column updated', 'export-anything')
             ));
         } else {
             wp_send_json_error(array(
-                'message' => 'Failed to update column'
+                'message' => __('Failed to update column', 'export-anything')
             ));
         }
     }
 
+    /**
+     * Handle AJAX request to get field keys
+     */
     public function get_field_keys() {
         check_ajax_referer('get_field_keys_nonce', 'nonce');
 
         if (!isset($_POST['type']) || !isset($_POST['post_type_id'])) {
             wp_send_json_error(array(
-                'message' => 'Missing required parameters'
+                'message' => __('Missing required parameters', 'export-anything')
             ));
         }
 
@@ -386,17 +441,23 @@ class Settings {
             $keys = Utilities::get_post_meta_keys($post_type_id);
         } else {
             wp_send_json_error(array(
-                'message' => 'Invalid type'
+                'message' => __('Invalid type', 'export-anything')
             ));
         }
 
         wp_send_json_success($keys);
     }
 
+    /**
+     * Load add column modal template
+     */
     public function add_column_modal() {
         Utilities::load_template('content/columns/modal', true);
     }
 
+    /**
+     * Load export progress modal template
+     */
     public function export_progress_modal() {
         Utilities::load_template('content/exports/modal', true);
     }

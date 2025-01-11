@@ -20,7 +20,7 @@ class Utilities {
             }
             include $file_path;
         } else {
-            error_log("Template file not found: " . $file_path);
+            error_log("Template file not found: " . esc_url($file_path));
         }
     }
 
@@ -35,16 +35,17 @@ class Utilities {
 
     public static function get_wp_post_type_name($slug) {
         $post_types = self::get_wp_post_types();
-        return isset($post_types[$slug]) ? $post_types[$slug]->labels->singular_name : null;
+        return isset($post_types[sanitize_key($slug)]) ? $post_types[sanitize_key($slug)]->labels->singular_name : null;
     }
 
     public static function get_wp_posts_columns() {
         global $wpdb;
         $columns = $wpdb->get_col("DESC {$wpdb->posts}", 0);
-        return $columns;
+        return array_map('sanitize_text_field', $columns);
     }
 
     public static function get_post_meta_keys($post_type_id) {
+        $post_type_id = absint($post_type_id);
         $post_type_type = PostType::get(array(
             'columns' => array(
                 'post_type'
@@ -62,6 +63,6 @@ class Utilities {
             WHERE p.post_type = %s",
             $post_type_type
         ));
-        return $meta_keys;
+        return array_map('sanitize_text_field', $meta_keys);
     }
 }

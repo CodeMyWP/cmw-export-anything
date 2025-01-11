@@ -68,4 +68,25 @@ jQuery(function($) {
 
         runExport();
     });
+
+    $(".delete-export").on("click", function(e) {
+        e.preventDefault();
+
+        var exportId = $(this).data('export-id');
+
+        $.post(
+            exportAnythingExport.ajax_url,
+            {
+                action: 'cmw_ea_deregister_export',
+                nonce: exportAnythingExport.deregister_nonce,
+                export_id: exportId
+            }, function(response) {
+                if (response.success) {
+                    location.reload();
+                }
+            }
+        ).fail(function(response) {
+            console.log(response);
+        });
+    });
 });

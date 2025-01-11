@@ -10,7 +10,6 @@ namespace CodeMyWP\Plugins\ExportAnything;
     </div>
     <div class="export-actions">
         <?php 
-        // $export->status = 'processing';
         switch($export->status) {
             case 'pending':
                 if($export->page > 1) {
@@ -44,6 +43,6 @@ namespace CodeMyWP\Plugins\ExportAnything;
                 break;
         }
         ?>
-        <a href="#" class="btn btn-outline-danger btn-sm delete-column">Delete</a>
+        <a href="#" class="btn btn-outline-danger btn-sm delete-export" data-export-id="<?= $export->id ?>">Delete</a>
     </div>
 </div>

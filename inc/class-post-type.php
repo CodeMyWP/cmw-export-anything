@@ -2,10 +2,35 @@
 
 namespace CodeMyWP\Plugins\ExportAnything;
 
+// Prevent direct access.
+if(!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * Class PostType
+ *
+ * Handles operations related to custom post types.
+ */
 class PostType {
 
+    /**
+     * @var string The table name without the WordPress table prefix.
+     */
     public static $table_name_without_prefix = 'cmw_ea_post_types';
 
+    /**
+     * Retrieve post types from the database.
+     *
+     * @param array $args {
+     *     Optional. Arguments to filter the query.
+     *
+     *     @type array $columns    Columns to select.
+     *     @type array $conditions Conditions for the WHERE clause.
+     *     @type int   $per_page   Number of results per page.
+     * }
+     * @return array|object|null Database query results.
+     */
     public static function get($args = array()) {
         global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
@@ -20,9 +45,9 @@ class PostType {
             $conditions = $args['conditions'];
             foreach($conditions as $key => $condition) {
                 if(!is_array($condition)) {
-                    $sql .= " AND {$key}={$condition}";
+                    $sql .= $wpdb->prepare(" AND {$key}=%s", $condition);
                 } else {
-                    $sql .= " AND {$condition['key']}{$condition['operator']}{$condition['value']}";
+                    $sql .= $wpdb->prepare(" AND {$condition['key']}{$condition['operator']}%s", $condition['value']);
                 }
             }
         }
@@ -35,6 +60,12 @@ class PostType {
         return $wpdb->get_results($sql);
     }
 
+    /**
+     * Add a new post type to the database.
+     *
+     * @param array $args Data to insert into the database.
+     * @return int|false The number of rows inserted, or false on error.
+     */
     public static function add($args) {
         global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
@@ -42,9 +73,18 @@ class PostType {
             $table_name,
             $args
         );
-        return $result;
+        if ($result !== false) {
+            return $wpdb->insert_id;
+        }
+        return false;
     }
 
+    /**
+     * Delete a post type from the database.
+     *
+     * @param int $post_type_id The ID of the post type to delete.
+     * @return int|false The number of rows deleted, or false on error.
+     */
     public static function delete($post_type_id) {
         global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
