@@ -36,3 +36,8 @@ For support, please visit the plugin's support page on the WordPress plugin repo
 
 ## License
 This plugin is licensed under the GPLv2 or later.
+
+## Credits
+This plugin uses the following libraries from node modules:
+- [Bootstrap](https://www.npmjs.com/package/bootstrap)
+- [Sass](https://www.npmjs.com/package/sass)
