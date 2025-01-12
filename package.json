@@ -10,5 +10,9 @@
   "dependencies": {
     "bootstrap": "^5.3.3",
     "sass": "1.49.0"
+  },
+  "credits": {
+    "bootstrap": "https://getbootstrap.com/",
+    "sass": "https://sass-lang.com/"
   }
 }

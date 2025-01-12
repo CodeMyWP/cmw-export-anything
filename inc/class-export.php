@@ -135,14 +135,14 @@ class Export {
         if(!isset($_POST['post_type_id'])) {
             wp_send_json_error(
                 array(
-                    'message' => esc_html__('Post type ID is required.', 'cmw-export-anything')
+                    'message' => esc_html__('Post type ID is required.', 'export-anything')
                 )
             );
         }
 
         if(!current_user_can('export')) {
             wp_send_json_error(array(
-                'message' => esc_html__('You do not have permission to export.', 'cmw-export-anything')
+                'message' => esc_html__('You do not have permission to export.', 'export-anything')
             ));
         }
 
@@ -166,7 +166,7 @@ class Export {
         ));
 
         wp_send_json_success(array(
-            'message' => esc_html__('Export has been registered.', 'cmw-export-anything'),
+            'message' => esc_html__('Export has been registered.', 'export-anything'),
             'export_id' => $export_id
         ));
     }
@@ -179,13 +179,13 @@ class Export {
 
         if(!isset($_POST['export_id'])) {
             wp_send_json_error(array(
-                'message' => esc_html__('Export ID is required.', 'cmw-export-anything')
+                'message' => esc_html__('Export ID is required.', 'export-anything')
             ));
         }
 
         if(!current_user_can('export')) {
             wp_send_json_error(array(
-                'message' => esc_html__('You do not have permission to deregister exports.', 'cmw-export-anything')
+                'message' => esc_html__('You do not have permission to deregister exports.', 'export-anything')
             ));
         }
 
@@ -200,7 +200,7 @@ class Export {
 
         if(!is_object($export)) {
             wp_send_json_error(array(
-                'message' => esc_html__('Export not found.', 'cmw-export-anything')
+                'message' => esc_html__('Export not found.', 'export-anything')
             ));
         }
 
@@ -211,7 +211,7 @@ class Export {
         $this->delete($export_id);
 
         wp_send_json_success(array(
-            'message' => esc_html__('Export has been deregistered.', 'cmw-export-anything')
+            'message' => esc_html__('Export has been deregistered.', 'export-anything')
         ));
     }
 
@@ -223,13 +223,13 @@ class Export {
 
         if(!isset($_POST['export_id'])) {
             wp_send_json_error(array(
-                'message' => esc_html__('Export ID is required.', 'cmw-export-anything')
+                'message' => esc_html__('Export ID is required.', 'export-anything')
             ));
         }
 
         if(!current_user_can('export')) {
             wp_send_json_error(array(
-                'message' => esc_html__('You do not have permission to process exports.', 'cmw-export-anything')
+                'message' => esc_html__('You do not have permission to process exports.', 'export-anything')
             ));
         }
 
@@ -243,7 +243,7 @@ class Export {
 
         if($export->status != 'pending') {
             wp_send_json_error(array(
-                'message' => esc_html__('Export is not pending.', 'cmw-export-anything')
+                'message' => esc_html__('Export is not pending.', 'export-anything')
             ));
         }
 
@@ -257,10 +257,10 @@ class Export {
         );
 
         if($export->status == 'completed') {
-            $response['message'] = esc_html__('Congratulations! Your export is ready for download.', 'cmw-export-anything');
+            $response['message'] = esc_html__('Congratulations! Your export is ready for download.', 'export-anything');
             $response['download_url'] = esc_url_raw(admin_url('admin-post.php?action=cmw_ea_download_export&export_id=' . $export_id . '&cmw_ea_nonce=' . wp_create_nonce('cmw_ea_download_export')));
         } else {
-            $response['message'] = esc_html__('Please wait the export is in progress.', 'cmw-export-anything');
+            $response['message'] = esc_html__('Please wait the export is in progress.', 'export-anything');
         }
 
         wp_send_json_success($response);
@@ -438,11 +438,11 @@ class Export {
         check_admin_referer('cmw_ea_download_export', 'cmw_ea_nonce');
 
         if (!isset($_REQUEST['export_id'])) {
-            wp_die(esc_html__('Export ID is required.', 'cmw-export-anything'));
+            wp_die(esc_html__('Export ID is required.', 'export-anything'));
         }
 
         if (!current_user_can('export')) {
-            wp_die(esc_html__('You do not have permission to download exports.', 'cmw-export-anything'));
+            wp_die(esc_html__('You do not have permission to download exports.', 'export-anything'));
         }
 
         $export_id = sanitize_text_field($_REQUEST['export_id']);
@@ -455,13 +455,13 @@ class Export {
         ));
 
         if (sizeof($export) == 0) {
-            wp_die(esc_html__('Export not found.', 'cmw-export-anything'));
+            wp_die(esc_html__('Export not found.', 'export-anything'));
         }
 
         $file_path = $export[0]->file_path;
 
         if (!file_exists($file_path)) {
-            wp_die(esc_html__('File not found.', 'cmw-export-anything'));
+            wp_die(esc_html__('File not found.', 'export-anything'));
         }
 
         header('Content-Type: application/csv');
