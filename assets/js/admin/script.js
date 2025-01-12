@@ -26,7 +26,7 @@ jQuery(function($) {
                     $("#add-column-alert").html(response.data.message).show();
                 }
             }
-        )
+        );
     });
 
     $('.edit-column').click(function(e) {
@@ -74,7 +74,7 @@ jQuery(function($) {
                     $("#edit-column-alert").html(response.data.message).show();
                 }
             }
-        )
+        );
     });
 
     $('.delete-column').click(function(e) {

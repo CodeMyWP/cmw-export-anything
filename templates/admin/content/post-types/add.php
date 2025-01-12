@@ -1,5 +1,12 @@
-<form action="<?= admin_url('admin.php'); ?>" method="post" class="form-horizontal">
-    <input type="hidden" name="page" value="<?= EXPORT_ANYTHING_SLUG ?>">
+<?php
+namespace CodeMyWP\Plugins\ExportAnything;
+
+if(!defined('ABSPATH')) {
+    exit;
+}
+?>
+<form action="<?= esc_url(admin_url('admin.php')); ?>" method="post" class="form-horizontal">
+    <input type="hidden" name="page" value="<?= esc_attr(EXPORT_ANYTHING_SLUG) ?>">
     <input type="hidden" name="action" value="save">
     <?php wp_nonce_field('save_post_type', '_wpnonce'); ?>
     <div class="row mb-3">

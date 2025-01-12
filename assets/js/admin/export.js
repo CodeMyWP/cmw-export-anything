@@ -4,6 +4,11 @@ jQuery(function($) {
 
         var postTypeId = $(this).data('post_type_id');
 
+        if (!postTypeId) {
+            console.error('Post Type ID is missing.');
+            return;
+        }
+
         $.post(
             exportAnythingExport.ajax_url,
             {
@@ -13,10 +18,12 @@ jQuery(function($) {
             }, function(response) {
                 if (response.success) {
                     location.reload();
+                } else {
+                    console.error('Export registration failed:', response.data);
                 }
             }
         ).fail(function(response) {
-            console.log(response);
+            console.error('Ajax request failed:', response);
         });
     });
 
@@ -27,6 +34,11 @@ jQuery(function($) {
 
         var exportId = $(this).data('export-id');
         var exportRunning = true;
+
+        if (!exportId) {
+            console.error('Export ID is missing.');
+            return;
+        }
 
         $(".cancel-export").on("click", function() {
             exportRunning = false;
@@ -59,10 +71,12 @@ jQuery(function($) {
                             $("#exportProgressModal .cancel-export").hide();
                             $("#exportProgressModal .download-export").removeClass('d-none').attr('href', response.data.download_url);
                         }
+                    } else {
+                        console.error('Export failed:', response.data);
                     }
                 }
             ).fail(function(response) {
-                console.log(response);
+                console.error('Ajax request failed:', response);
             });
         }
 
@@ -74,6 +88,11 @@ jQuery(function($) {
 
         var exportId = $(this).data('export-id');
 
+        if (!exportId) {
+            console.error('Export ID is missing.');
+            return;
+        }
+
         $.post(
             exportAnythingExport.ajax_url,
             {
@@ -83,10 +102,12 @@ jQuery(function($) {
             }, function(response) {
                 if (response.success) {
                     location.reload();
+                } else {
+                    console.error('Export deregistration failed:', response.data);
                 }
             }
         ).fail(function(response) {
-            console.log(response);
+            console.error('Ajax request failed:', response);
         });
     });
 });

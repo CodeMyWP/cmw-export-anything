@@ -1,5 +1,10 @@
 <?php
 
+// Ensure the file is being accessed within the WordPress context
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
+
 /**
  * Hook: Before Settings page
  * 

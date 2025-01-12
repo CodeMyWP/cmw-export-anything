@@ -1,5 +1,9 @@
 <?php
 namespace CodeMyWP\Plugins\ExportAnything;
+
+if(!defined('ABSPATH')) {
+    exit;
+}
 ?>
 <div>
     <div class="exports">

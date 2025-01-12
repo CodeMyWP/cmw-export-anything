@@ -1,5 +1,18 @@
 <?php
 
+// Ensure the file is being accessed within the WordPress context
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
+
+/**
+ * Post Types Template
+ *
+ * This template handles the display of post types in the admin area.
+ *
+ * @package CodeMyWP\Plugins\ExportAnything
+ */
+
 /**
  * Hook: Before Post Types
  * 
@@ -15,8 +28,6 @@ do_action('export_anything_before_post_types');
  * 
  */
 do_action('export_anything_post_types', $args);
-
-
 
 /**
  * Hook: After Post Types

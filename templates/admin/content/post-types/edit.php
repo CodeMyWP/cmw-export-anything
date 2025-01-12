@@ -1,13 +1,16 @@
 <?php
 namespace CodeMyWP\Plugins\ExportAnything;
 
+if(!defined('ABSPATH')) {
+    exit;
+}
 ?>
 <div>
     <div class="columns">
         <?php
         if(sizeof($columns) > 0) {
             foreach($columns as $column) {
-                Utilities::load_template('components/column', true, ['id' => $_REQUEST['id'], 'column' => $column]);
+                Utilities::load_template('components/column', true, ['id' => esc_attr($_REQUEST['id']), 'column' => $column]);
             }
         } else {
             Utilities::load_template('components/no-columns', true);

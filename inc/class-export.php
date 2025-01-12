@@ -258,7 +258,7 @@ class Export {
 
         if($export->status == 'completed') {
             $response['message'] = esc_html__('Congratulations! Your export is ready for download.', 'cmw-export-anything');
-            $response['download_url'] = esc_url_raw(admin_url('admin-post.php?action=cmw_ea_download_export&export_id=' . $export_id));
+            $response['download_url'] = esc_url_raw(admin_url('admin-post.php?action=cmw_ea_download_export&export_id=' . $export_id . '&cmw_ea_nonce=' . wp_create_nonce('cmw_ea_download_export')));
         } else {
             $response['message'] = esc_html__('Please wait the export is in progress.', 'cmw-export-anything');
         }
@@ -434,6 +434,9 @@ class Export {
      * Download the export file.
      */
     public function download() {
+
+        check_admin_referer('cmw_ea_download_export', 'cmw_ea_nonce');
+
         if (!isset($_REQUEST['export_id'])) {
             wp_die(esc_html__('Export ID is required.', 'cmw-export-anything'));
         }
