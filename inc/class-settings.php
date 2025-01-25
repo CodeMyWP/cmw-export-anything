@@ -40,8 +40,8 @@ class Settings {
      */
     public function add_admin_menu() {
         add_menu_page(
-            __('Export Anything', 'export-anything'), // Page title
-            __('Export Anything', 'export-anything'), // Menu title
+            __('Export Anything', 'cmw-export-anything'), // Page title
+            __('Export Anything', 'cmw-export-anything'), // Menu title
             'manage_options',    // Capability
             EXPORT_ANYTHING_SLUG, // Menu slug
             [$this, 'menu_page'], // Callback function
@@ -100,8 +100,8 @@ class Settings {
             switch($_REQUEST['action']) {
                 case 'save':
                     // Verify nonce
-                    if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'save_post_type')) {
-                        wp_die(__('Nonce verification failed', 'export-anything'));
+                    if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'save_post_type')) {
+                        wp_die(esc_html__('Nonce verification failed', 'cmw-export-anything'));
                     }
                     
                     // Check required parameters
@@ -111,8 +111,8 @@ class Settings {
                     }
 
                     $args = array();
-                    $args['name'] = sanitize_text_field($_REQUEST['name']);
-                    $args['post_type'] = sanitize_text_field($_REQUEST['post_type']);
+                    $args['name'] = sanitize_text_field(wp_unslash($_REQUEST['name']));
+                    $args['post_type'] = sanitize_text_field(wp_unslash($_REQUEST['post_type']));
 
                     // Add post type
                     $id = PostType::add($args);
@@ -123,8 +123,8 @@ class Settings {
                 break;
                 case 'delete':
                     // Verify nonce
-                    if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'delete_post_type')) {
-                        wp_die(__('Nonce verification failed', 'export-anything'));
+                    if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'delete_post_type')) {
+                        wp_die(esc_html__('Nonce verification failed', 'cmw-export-anything'));
                     }
 
                     // Check required parameters
@@ -179,7 +179,7 @@ class Settings {
      * Load content based on action
      */
     public function content() {
-        $action = isset($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) : '';
+        $action = isset($_REQUEST['action']) ? sanitize_text_field(wp_unslash($_REQUEST['action'])) : '';
         $this->action_content($action);
         if(!empty($action)) {
             switch($action) {
@@ -204,84 +204,95 @@ class Settings {
         $args = array();
         switch($action) {
             case 'add':
-                $heading = __('Add Post Type', 'export-anything');
+                $heading = __('Add Post Type', 'cmw-export-anything');
                 $actions = array(
                     array(
                         'key' => 'cancel', 
-                        'label' => __('Cancel', 'export-anything'), 
+                        'label' => __('Cancel', 'cmw-export-anything'), 
                         'type' => 'outline-danger'
                     )
                 );
                 $args['wp_post_types'] = Utilities::get_wp_post_types();
             break;
             case 'edit':
-                $args['post_id'] = intval($_REQUEST['id']);
-                $post_type_name = PostType::get(array(
-                    "columns" => array(
-                        "name"
-                    ),
-                    "conditions" => array(
-                        "id" => intval($_REQUEST['id'])
-                    ),
-                    "per_page" => 1
-                ));
-                $columns = Column::get(array(
-                    "columns" => array(
-                        "id",
-                        "name",
-                        "key",
-                        "type"
-                    ),
-                    "conditions" => array(
-                        "post_type_id" => intval($_REQUEST['id'])
-                    )
-                ));
-                $args['columns'] = $columns;
-                $heading = __('Edit ', 'export-anything') . $post_type_name;
                 $actions = array(
                     array(
                         'key' => 'cancel', 
-                        'label' => __('Go Back', 'export-anything'), 
+                        'label' => __('Go Back', 'cmw-export-anything'), 
                         'type' => 'secondary'
-                    ),
-                    array(
+                    )
+                );
+                if(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
+                    $args['post_id'] = intval($_REQUEST['id']);
+                    $post_type_name = PostType::get(array(
+                        "columns" => array(
+                            "name"
+                        ),
+                        "conditions" => array(
+                            "id" => intval($_REQUEST['id'])
+                        ),
+                        "per_page" => 1
+                    ));
+                    $heading = __('Edit ', 'cmw-export-anything') . $post_type_name;
+
+                    $columns = Column::get(array(
+                        "columns" => array(
+                            "id",
+                            "name",
+                            "key",
+                            "type"
+                        ),
+                        "conditions" => array(
+                            "post_type_id" => intval($_REQUEST['id'])
+                        )
+                    ));
+                    $args['columns'] = $columns;
+
+                    array_push($actions, array(
                         'key' => 'delete', 
-                        'label' => __('Delete', 'export-anything'), 
+                        'label' => __('Delete', 'cmw-export-anything'), 
                         'type' => 'danger',
                         'args' => array(
                             'id' => intval($_REQUEST['id']),
                             '_wpnonce' => wp_create_nonce('delete_post_type')
                         )
-                    )
-                );
+                    ));
+                } else {
+                    $heading = __('Not Found', 'cmw-export-anything');
+                }
             break;
             case 'view':
-                $args['post_id'] = intval($_REQUEST['id']);
-                $exports = Export::get(array(
-                    "conditions" => array(
-                        "post_type_id" => intval($_REQUEST['id'])
-                    )
-                ));
-                $args['exports'] = $exports;
-                $post_type_name = PostType::get(array(
-                    "columns" => array(
-                        "name"
-                    ),
-                    "conditions" => array(
-                        "id" => intval($_REQUEST['id'])
-                    ),
-                    "per_page" => 1
-                ));
-                $heading = $post_type_name . __(' Exports', 'export-anything');
                 $actions = array(
                     array(
                         'key' => 'cancel', 
-                        'label' => __('Go Back', 'export-anything'), 
+                        'label' => __('Go Back', 'cmw-export-anything'), 
                         'type' => 'secondary'
-                    ),
-                    array(
+                    )
+                );
+                if(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
+                    $args['post_id'] = intval($_REQUEST['id']);
+
+                    $exports = Export::get(array(
+                        "conditions" => array(
+                            "post_type_id" => intval($_REQUEST['id'])
+                        )
+                    ));
+                    $args['exports'] = $exports;
+
+                    $post_type_name = PostType::get(array(
+                        "columns" => array(
+                            "name"
+                        ),
+                        "conditions" => array(
+                            "id" => intval($_REQUEST['id'])
+                        ),
+                        "per_page" => 1
+                    ));
+                    $heading = $post_type_name . __(' Exports', 'cmw-export-anything');
+
+                    array_push($actions, array(
                         'key' => 'export', 
-                        'label' => __('Add Export Job', 'export-anything'), 
+                        'label' => __('Add Export Job', 'cmw-export-anything'), 
                         'type' => 'primary',
                         'args' => array(
                             'id' => intval($_REQUEST['id'])
@@ -289,16 +300,18 @@ class Settings {
                         'data' => array(
                             'post_type_id' => intval($_REQUEST['id'])
                         )
-                    )
-                );
+                    ));
+                } else {
+                    $heading = __('Not Found', 'cmw-export-anything');
+                }
             break;
             default:
                 $args['post_types'] = PostType::get();
-                $heading = __('Post Types', 'export-anything');
+                $heading = __('Post Types', 'cmw-export-anything');
                 $actions = array(
                     array(
                         'key' => 'add', 
-                        'label' => __('Add Post Type', 'export-anything'), 
+                        'label' => __('Add Post Type', 'cmw-export-anything'), 
                         'type' => 'primary'
                     )
                 );
@@ -360,14 +373,14 @@ class Settings {
 
         if (!isset($_POST['post_type_id']) || !isset($_POST['name']) || !isset($_POST['key']) || !isset($_POST['type'])) {
             wp_send_json_error(array(
-                'message' => __('Missing required parameters', 'export-anything')
+                'message' => __('Missing required parameters', 'cmw-export-anything')
             ));
         }
 
-        $post_type_id = sanitize_text_field($_POST['post_type_id']);
-        $name = sanitize_text_field($_POST['name']);
-        $key = sanitize_text_field($_POST['key']);
-        $type = sanitize_text_field($_POST['type']);
+        $post_type_id = sanitize_text_field(wp_unslash($_POST['post_type_id']));
+        $name = sanitize_text_field(wp_unslash($_POST['name']));
+        $key = sanitize_text_field(wp_unslash($_POST['key']));
+        $type = sanitize_text_field(wp_unslash($_POST['type']));
 
         $column_id = Column::add($post_type_id, $name, $key, $type);
 
@@ -381,7 +394,7 @@ class Settings {
             ));
         } else {
             wp_send_json_error(array(
-                'message' => __('Something went wrong.', 'export-anything')
+                'message' => __('Something went wrong.', 'cmw-export-anything')
             ));
         }
     }
@@ -394,28 +407,28 @@ class Settings {
 
         if (!isset($_POST['id']) || !isset($_POST['post_type_id']) || !isset($_POST['name']) || !isset($_POST['key']) || !isset($_POST['type'])) {
             wp_send_json_error(array(
-                'message' => __('Missing required parameters', 'export-anything')
+                'message' => __('Missing required parameters', 'cmw-export-anything')
             ));
         }
 
         $id = intval($_POST['id']);
 
         $args = [
-            'post_type_id' => sanitize_text_field($_POST['post_type_id']),
-            'name' => sanitize_text_field($_POST['name']),
-            'key' => sanitize_text_field($_POST['key']),
-            'type' => sanitize_text_field($_POST['type'])
+            'post_type_id' => sanitize_text_field(wp_unslash($_POST['post_type_id'])),
+            'name' => sanitize_text_field(wp_unslash($_POST['name'])),
+            'key' => sanitize_text_field(wp_unslash($_POST['key'])),
+            'type' => sanitize_text_field(wp_unslash($_POST['type']))
         ];
 
         $result = Column::update($id, $args);
 
         if ($result !== false) {
             wp_send_json_success(array(
-                'message' => __('Column updated', 'export-anything')
+                'message' => __('Column updated', 'cmw-export-anything')
             ));
         } else {
             wp_send_json_error(array(
-                'message' => __('Failed to update column', 'export-anything')
+                'message' => __('Failed to update column', 'cmw-export-anything')
             ));
         }
     }
@@ -428,12 +441,12 @@ class Settings {
 
         if (!isset($_POST['type']) || !isset($_POST['post_type_id'])) {
             wp_send_json_error(array(
-                'message' => __('Missing required parameters', 'export-anything')
+                'message' => __('Missing required parameters', 'cmw-export-anything')
             ));
         }
 
-        $type = sanitize_text_field($_POST['type']);
-        $post_type_id = sanitize_text_field($_POST['post_type_id']);
+        $type = sanitize_text_field(wp_unslash($_POST['type']));
+        $post_type_id = sanitize_text_field(wp_unslash($_POST['post_type_id']));
 
         if ($type === 'posts') {
             $keys = Utilities::get_wp_posts_columns();
@@ -441,7 +454,7 @@ class Settings {
             $keys = Utilities::get_post_meta_keys($post_type_id);
         } else {
             wp_send_json_error(array(
-                'message' => __('Invalid type', 'export-anything')
+                'message' => __('Invalid type', 'cmw-export-anything')
             ));
         }
 

@@ -5,8 +5,8 @@ if(!defined('ABSPATH')) {
     exit;
 }
 ?>
-<form action="<?= esc_url(admin_url('admin.php')); ?>" method="post" class="form-horizontal">
-    <input type="hidden" name="page" value="<?= esc_attr(EXPORT_ANYTHING_SLUG) ?>">
+<form action="<?php echo esc_url(admin_url('admin.php')); ?>" method="post" class="form-horizontal">
+    <input type="hidden" name="page" value="<?php echo esc_attr(EXPORT_ANYTHING_SLUG) ?>">
     <input type="hidden" name="action" value="save">
     <?php wp_nonce_field('save_post_type', '_wpnonce'); ?>
     <div class="row mb-3">

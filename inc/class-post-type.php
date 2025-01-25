@@ -45,9 +45,9 @@ class PostType {
             $conditions = $args['conditions'];
             foreach($conditions as $key => $condition) {
                 if(!is_array($condition)) {
-                    $sql .= $wpdb->prepare(" AND {$key}=%s", $condition);
+                    $sql .= $wpdb->prepare(" AND " . esc_sql($key) . "=%s", $condition);
                 } else {
-                    $sql .= $wpdb->prepare(" AND {$condition['key']}{$condition['operator']}%s", $condition['value']);
+                    $sql .= $wpdb->prepare(" AND " . esc_sql($condition['key']) . esc_sql($condition['operator']) . "%s", $condition['value']);
                 }
             }
         }

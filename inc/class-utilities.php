@@ -20,7 +20,7 @@ class Utilities {
             }
             include $file_path;
         } else {
-            error_log("Template file not found: " . esc_url($file_path));
+            echo "Template file not found: " . esc_url($file_path);
         }
     }
 

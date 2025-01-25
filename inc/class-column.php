@@ -61,9 +61,9 @@ class Column {
             $conditions = $args['conditions'];
             foreach($conditions as $key => $condition) {
                 if(!is_array($condition)) {
-                    $sql .= $wpdb->prepare(" AND {$key}=%s", $condition);
+                    $sql .= $wpdb->prepare(" AND " . esc_sql($key) . "=%s", $condition);
                 } else {
-                    $sql .= $wpdb->prepare(" AND {$condition['key']}{$condition['operator']}%s", $condition['value']);
+                    $sql .= $wpdb->prepare(" AND " . esc_sql($condition['key']) . esc_sql($condition['operator']) . "%s", $condition['value']);
                 }
             }
         }
@@ -73,6 +73,7 @@ class Column {
                 return $wpdb->get_var($sql);
             }
         }
+
         return $wpdb->get_results($sql);
     }
 
@@ -91,13 +92,13 @@ class Column {
         check_ajax_referer('cmw_ea_add_column_nonce', 'security');
 
         if (!isset($_POST['post_type_id'], $_POST['name'], $_POST['key'], $_POST['type']) || empty($_POST['post_type_id']) || empty($_POST['name']) || empty($_POST['key']) || empty($_POST['type'])) {
-            wp_send_json_error(['message' => __('Missing required parameters', 'export-anything')]);
+            wp_send_json_error(['message' => __('Missing required parameters', 'cmw-export-anything')]);
         }
 
-        $post_type_id = sanitize_text_field($_POST['post_type_id']);
-        $name = sanitize_text_field($_POST['name']);
-        $key = sanitize_text_field($_POST['key']);
-        $type = sanitize_text_field($_POST['type']);
+        $post_type_id = sanitize_text_field(wp_unslash($_POST['post_type_id']));
+        $name = sanitize_text_field(wp_unslash($_POST['name']));
+        $key = sanitize_text_field(wp_unslash($_POST['key']));
+        $type = sanitize_text_field(wp_unslash($_POST['type']));
 
         if(isset($_POST['id']) && !empty($_POST['id'])) {
             $id = intval($_POST['id']);
@@ -107,16 +108,16 @@ class Column {
                 'type' => $type
             ]);
             if($result) {
-                wp_send_json_success(['message' => __('Column updated successfully', 'export-anything')]);
+                wp_send_json_success(['message' => __('Column updated successfully', 'cmw-export-anything')]);
             } else {
-                wp_send_json_error(['message' => __('Failed to update column', 'export-anything')]);
+                wp_send_json_error(['message' => __('Failed to update column', 'cmw-export-anything')]);
             }
         } else {
             $result = self::add($post_type_id, $name, $key, $type);
             if ($result) {
-                wp_send_json_success(['message' => __('Column added successfully', 'export-anything'), 'id' => $result]);
+                wp_send_json_success(['message' => __('Column added successfully', 'cmw-export-anything'), 'id' => $result]);
             } else {
-                wp_send_json_error(['message' => __('Failed to add column', 'export-anything')]);
+                wp_send_json_error(['message' => __('Failed to add column', 'cmw-export-anything')]);
             }
         }
     }
@@ -125,7 +126,7 @@ class Column {
         check_ajax_referer('delete_column_nonce', 'security');
 
         if (!isset($_POST['id']) || empty($_POST['id'])) {
-            wp_send_json_error(['message' => __('Missing required parameter: id', 'export-anything')]);
+            wp_send_json_error(['message' => __('Missing required parameter: id', 'cmw-export-anything')]);
         }
 
         $id = intval($_POST['id']);
@@ -133,9 +134,9 @@ class Column {
         $result = self::remove($id);
 
         if ($result) {
-            wp_send_json_success(['message' => __('Column deleted successfully', 'export-anything')]);
+            wp_send_json_success(['message' => __('Column deleted successfully', 'cmw-export-anything')]);
         } else {
-            wp_send_json_error(['message' => __('Failed to delete column', 'export-anything')]);
+            wp_send_json_error(['message' => __('Failed to delete column', 'cmw-export-anything')]);
         }
     }
 
