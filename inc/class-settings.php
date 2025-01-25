@@ -60,8 +60,8 @@ class Settings {
             return;
         }
         wp_enqueue_style(EXPORT_ANYTHING_SLUG . '-admin', EXPORT_ANYTHING_URL . 'assets/css/admin/admin.css', [], EXPORT_ANYTHING_VERSION);
-        wp_enqueue_script('bootstrap', EXPORT_ANYTHING_URL . 'node_modules/bootstrap/dist/js/bootstrap.bundle.min.js', array('jquery'), '5.1.3', true);
-        wp_enqueue_script(EXPORT_ANYTHING_SLUG, EXPORT_ANYTHING_URL . 'assets/js/admin/script.js', array('jquery'), EXPORT_ANYTHING_VERSION);
+        wp_enqueue_script('bootstrap', EXPORT_ANYTHING_URL . 'assets/js/admin/bootstrap.bundle.min.js', array('jquery'), '5.1.3', array('in_footer' => true));
+        wp_enqueue_script(EXPORT_ANYTHING_SLUG, EXPORT_ANYTHING_URL . 'assets/js/admin/script.js', array('jquery'), EXPORT_ANYTHING_VERSION, array('in_footer' => true));
         wp_localize_script(EXPORT_ANYTHING_SLUG, 'exportAnything', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'create_column_nonce' => wp_create_nonce('create_column_nonce'),
@@ -69,15 +69,15 @@ class Settings {
             'save_column_nonce' => wp_create_nonce('save_column_nonce'),
             'get_field_keys_nonce' => wp_create_nonce('get_field_keys_nonce'),
         ));
-        wp_enqueue_script(EXPORT_ANYTHING_SLUG . '_export', EXPORT_ANYTHING_URL . 'assets/js/admin/export.js', array('jquery'), EXPORT_ANYTHING_VERSION, true);
+        wp_enqueue_script(EXPORT_ANYTHING_SLUG . '_export', EXPORT_ANYTHING_URL . 'assets/js/admin/export.js', array('jquery'), EXPORT_ANYTHING_VERSION, array('in_footer' => true));
         wp_localize_script(EXPORT_ANYTHING_SLUG . '_export', 'exportAnythingExport', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'register_nonce' => wp_create_nonce('cmw-ea-register-export'),
             'start_nonce' => wp_create_nonce('cmw-ea-start-export'),
             'deregister_nonce' => wp_create_nonce('cmw-ea-deregister-export'),
         ));
-        wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'), '4.1.0-rc.0', true);
-        wp_enqueue_style('select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', array(), '4.1.0-rc.0');
+        wp_enqueue_script('select2', EXPORT_ANYTHING_URL . 'assets/js/admin/select2.min.js', array('jquery'), EXPORT_ANYTHING_VERSION, array('in_footer' => true));
+        wp_enqueue_style('select2-css', EXPORT_ANYTHING_URL . 'assets/css/admin/select2.min.css', array(), EXPORT_ANYTHING_VERSION);
     }
 
     /**
