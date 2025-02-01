@@ -1,4 +1,5 @@
 <?php
+namespace CodeMyWP\Plugins\ExportAnything;
 
 // Ensure the file is being accessed within the WordPress context
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @hooked CodeMyWP\Plugins\ExportAnything\Settings::start_post_types
  * 
  */
-do_action('export_anything_before_post_types');
+do_action('cmw_ea_before_post_types');
 
 /**
  * Hook: Post Types
@@ -27,7 +28,7 @@ do_action('export_anything_before_post_types');
  * @hooked CodeMyWP\Plugins\ExportAnything\Settings::post_types - 10
  * 
  */
-do_action('export_anything_post_types', $args);
+do_action('cmw_ea_post_types', $args);
 
 /**
  * Hook: After Post Types
@@ -35,4 +36,4 @@ do_action('export_anything_post_types', $args);
  * @hooked CodeMyWP\Plugins\ExportAnything\Settings::end_post_types
  * 
  */
-do_action('export_anything_after_post_types');
+do_action('cmw_ea_after_post_types');

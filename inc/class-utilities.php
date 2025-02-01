@@ -46,15 +46,7 @@ class Utilities {
 
     public static function get_post_meta_keys($post_type_id) {
         $post_type_id = absint($post_type_id);
-        $post_type_type = PostType::get(array(
-            'columns' => array(
-                'post_type'
-            ),
-            'conditions' => array(
-                'id' => $post_type_id
-            ),
-            'per_page' => 1
-        ));
+        $post_type_type = PostType::get($post_type_id)->post_type;
         
         global $wpdb;
         $meta_keys = $wpdb->get_col($wpdb->prepare(

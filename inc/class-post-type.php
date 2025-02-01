@@ -20,44 +20,34 @@ class PostType {
     public static $table_name_without_prefix = 'cmw_ea_post_types';
 
     /**
-     * Retrieve post types from the database.
-     *
-     * @param array $args {
-     *     Optional. Arguments to filter the query.
-     *
-     *     @type array $columns    Columns to select.
-     *     @type array $conditions Conditions for the WHERE clause.
-     *     @type int   $per_page   Number of results per page.
-     * }
-     * @return array|object|null Database query results.
+     * Get a post type from the database.
+     * 
+     * @param int $id The ID of the post type to get.
+     * @return object|false The post type object, or false if not found.
      */
-    public static function get($args = array()) {
+    public static function get($id) {
         global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
-        $sql = "SELECT ";
-        if(isset($args['columns'])) {
-            $sql .= implode(",", $args['columns']);
-        } else {
-            $sql .= "*";
-        }
-        $sql .= " FROM $table_name WHERE 1=1";
-        if(isset($args['conditions'])) {
-            $conditions = $args['conditions'];
-            foreach($conditions as $key => $condition) {
-                if(!is_array($condition)) {
-                    $sql .= $wpdb->prepare(" AND " . esc_sql($key) . "=%s", $condition);
-                } else {
-                    $sql .= $wpdb->prepare(" AND " . esc_sql($condition['key']) . esc_sql($condition['operator']) . "%s", $condition['value']);
-                }
-            }
-        }
-        
-        if(isset($args['columns']) && isset($args['per_page'])) {
-            if(sizeof($args['columns']) == 1 && $args['per_page'] == 1) {
-                return $wpdb->get_var($sql);
-            }
-        }
-        return $wpdb->get_results($sql);
+        $result = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM %i WHERE id = %d",
+            $table_name,
+            $id
+        ));
+        return $result;
+    }
+
+    /**
+     * Get all post types from the database.
+     * 
+     * @return array An array of post types.
+     */
+    public static function get_all() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . self::$table_name_without_prefix;
+        $results = $wpdb->get_results(
+            $wpdb->prepare("SELECT * FROM %i", $table_name)
+        );
+        return $results;
     }
 
     /**

@@ -18,16 +18,16 @@ class Settings {
         add_action('admin_init', [$this, 'action_handler']);
 
         // Add content
-        add_action('export_anything_settings_content', [$this, 'content']);
+        add_action('cmw_ea_settings_content', [$this, 'content']);
 
         // Add Start of Post Types
-        add_action('export_anything_before_post_types', [$this, 'start_post_types'], 20);
+        add_action('cmw_ea_before_post_types', [$this, 'start_post_types'], 20);
 
         // Add Post Types
-        add_action('export_anything_post_types', [$this, 'post_types'], 10, 1);
+        add_action('cmw_ea_post_types', [$this, 'post_types'], 10, 1);
 
         // Add End of Post Types
-        add_action('export_anything_after_post_types', [$this, 'end_post_types']);
+        add_action('cmw_ea_after_post_types', [$this, 'end_post_types']);
 
         // AJAX actions
         add_action('wp_ajax_cmw_ea_create_column', [$this, 'create_column']);
@@ -64,17 +64,17 @@ class Settings {
         wp_enqueue_script(EXPORT_ANYTHING_SLUG, EXPORT_ANYTHING_URL . 'assets/js/admin/script.js', array('jquery'), EXPORT_ANYTHING_VERSION, array('in_footer' => true));
         wp_localize_script(EXPORT_ANYTHING_SLUG, 'exportAnything', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'create_column_nonce' => wp_create_nonce('create_column_nonce'),
-            'delete_column_nonce' => wp_create_nonce('delete_column_nonce'),
-            'save_column_nonce' => wp_create_nonce('save_column_nonce'),
-            'get_field_keys_nonce' => wp_create_nonce('get_field_keys_nonce'),
+            'create_column_nonce' => wp_create_nonce('cmw_ea_create_column_nonce'),
+            'delete_column_nonce' => wp_create_nonce('cmw_ea_delete_column_nonce'),
+            'save_column_nonce' => wp_create_nonce('cmw_ea_save_column_nonce'),
+            'get_field_keys_nonce' => wp_create_nonce('cmw_ea_get_field_keys_nonce'),
         ));
         wp_enqueue_script(EXPORT_ANYTHING_SLUG . '_export', EXPORT_ANYTHING_URL . 'assets/js/admin/export.js', array('jquery'), EXPORT_ANYTHING_VERSION, array('in_footer' => true));
         wp_localize_script(EXPORT_ANYTHING_SLUG . '_export', 'exportAnythingExport', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'register_nonce' => wp_create_nonce('cmw-ea-register-export'),
-            'start_nonce' => wp_create_nonce('cmw-ea-start-export'),
-            'deregister_nonce' => wp_create_nonce('cmw-ea-deregister-export'),
+            'register_nonce' => wp_create_nonce('cmw_ea_register_export'),
+            'deregister_nonce' => wp_create_nonce('cmw_ea_deregister_export'),
+            'start_nonce' => wp_create_nonce('cmw_ea_start_export')
         ));
         wp_enqueue_script('select2', EXPORT_ANYTHING_URL . 'assets/js/admin/select2.min.js', array('jquery'), EXPORT_ANYTHING_VERSION, array('in_footer' => true));
         wp_enqueue_style('select2-css', EXPORT_ANYTHING_URL . 'assets/css/admin/select2.min.css', array(), EXPORT_ANYTHING_VERSION);
@@ -100,7 +100,7 @@ class Settings {
             switch($_REQUEST['action']) {
                 case 'save':
                     // Verify nonce
-                    if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'save_post_type')) {
+                    if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'cmw_ea_save_post_type')) {
                         wp_die(esc_html__('Nonce verification failed', 'cmw-export-anything'));
                     }
                     
@@ -123,7 +123,7 @@ class Settings {
                 break;
                 case 'delete':
                     // Verify nonce
-                    if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'delete_post_type')) {
+                    if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'cmw_ea_delete_post_type')) {
                         wp_die(esc_html__('Nonce verification failed', 'cmw-export-anything'));
                     }
 
@@ -224,28 +224,10 @@ class Settings {
                 );
                 if(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
                     $args['post_id'] = intval($_REQUEST['id']);
-                    $post_type_name = PostType::get(array(
-                        "columns" => array(
-                            "name"
-                        ),
-                        "conditions" => array(
-                            "id" => intval($_REQUEST['id'])
-                        ),
-                        "per_page" => 1
-                    ));
+                    $post_type_name = PostType::get(intval($_REQUEST['id']))->name;
                     $heading = __('Edit ', 'cmw-export-anything') . $post_type_name;
 
-                    $columns = Column::get(array(
-                        "columns" => array(
-                            "id",
-                            "name",
-                            "key",
-                            "type"
-                        ),
-                        "conditions" => array(
-                            "post_type_id" => intval($_REQUEST['id'])
-                        )
-                    ));
+                    $columns = Column::get_by_post_type_id(intval($_REQUEST['id']));
                     $args['columns'] = $columns;
 
                     array_push($actions, array(
@@ -254,7 +236,7 @@ class Settings {
                         'type' => 'danger',
                         'args' => array(
                             'id' => intval($_REQUEST['id']),
-                            '_wpnonce' => wp_create_nonce('delete_post_type')
+                            '_wpnonce' => wp_create_nonce('cmw_ea_delete_post_type')
                         )
                     ));
                 } else {
@@ -272,22 +254,10 @@ class Settings {
                 if(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
                     $args['post_id'] = intval($_REQUEST['id']);
 
-                    $exports = Export::get(array(
-                        "conditions" => array(
-                            "post_type_id" => intval($_REQUEST['id'])
-                        )
-                    ));
+                    $exports = Export::get_by_post_type_id(intval($_REQUEST['id']));
                     $args['exports'] = $exports;
 
-                    $post_type_name = PostType::get(array(
-                        "columns" => array(
-                            "name"
-                        ),
-                        "conditions" => array(
-                            "id" => intval($_REQUEST['id'])
-                        ),
-                        "per_page" => 1
-                    ));
+                    $post_type_name = PostType::get(intval($_REQUEST['id']))->name;
                     $heading = $post_type_name . __(' Exports', 'cmw-export-anything');
 
                     array_push($actions, array(
@@ -306,7 +276,7 @@ class Settings {
                 }
             break;
             default:
-                $args['post_types'] = PostType::get();
+                $args['post_types'] = PostType::get_all();
                 $heading = __('Post Types', 'cmw-export-anything');
                 $actions = array(
                     array(
@@ -369,7 +339,7 @@ class Settings {
      * Handle AJAX request to create a column
      */
     public function create_column() {
-        check_ajax_referer('create_column_nonce', 'nonce');
+        check_ajax_referer('cmw_ea_create_column_nonce', 'nonce');
 
         if (!isset($_POST['post_type_id']) || !isset($_POST['name']) || !isset($_POST['key']) || !isset($_POST['type'])) {
             wp_send_json_error(array(
@@ -403,7 +373,7 @@ class Settings {
      * Handle AJAX request to save a column
      */
     public function save_column() {
-        check_ajax_referer('save_column_nonce', 'nonce');
+        check_ajax_referer('cmw_ea_save_column_nonce', 'nonce');
 
         if (!isset($_POST['id']) || !isset($_POST['post_type_id']) || !isset($_POST['name']) || !isset($_POST['key']) || !isset($_POST['type'])) {
             wp_send_json_error(array(
@@ -437,7 +407,7 @@ class Settings {
      * Handle AJAX request to get field keys
      */
     public function get_field_keys() {
-        check_ajax_referer('get_field_keys_nonce', 'nonce');
+        check_ajax_referer('cmw_ea_get_field_keys_nonce', 'nonce');
 
         if (!isset($_POST['type']) || !isset($_POST['post_type_id'])) {
             wp_send_json_error(array(

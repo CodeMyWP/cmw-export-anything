@@ -1,4 +1,6 @@
 <?php
+namespace CodeMyWP\Plugins\ExportAnything;
+
 /**
  * Header of the post types layout.
  *

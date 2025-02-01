@@ -5,6 +5,9 @@
  * Author: CodeMyWP
  * Author uri: https://www.codemywp.com
  * Version: 1.0.0
+ * Requires at least: 6.2
+ * Requires PHP: 7.4
+ * Tested up to: 6.7
  * License: GPL2
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: cmw-export-anything

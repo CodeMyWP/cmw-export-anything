@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <div class="d-flex justify-content-between align-items-center pb-3 mb-3 border-bottom">
-    <h4><?php echo esc_html(apply_filters('export_anything_section_heading', $heading)) ?></h4>
+    <h4><?php echo esc_html($heading) ?></h4>
     <div class="actions d-flex align-items-center">
         <?php foreach($actions as $action): 
             $action_url = esc_url(admin_url('admin.php?page=' . EXPORT_ANYTHING_SLUG . '&action=' . $action['key']));

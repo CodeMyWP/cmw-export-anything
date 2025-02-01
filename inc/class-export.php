@@ -53,52 +53,39 @@ class Export {
     }
 
     /**
-     * Retrieve export records from the database.
+     * Get export record from the database by ID.
      *
-     * @param array $args The arguments for retrieving records.
-     * @return mixed The retrieved records.
+     * @param int $id ID of Export record.
+     * @return object The export record.
      */
-    public static function get($args) {
+    public static function get_by_id($id) {
         global $wpdb;
         $table_name = $wpdb->prefix . self::$table_name_without_prefix;
-        $sql = "SELECT ";
-        if(isset($args['columns'])) {
-            $columns = array_map(function($column) {
-                return "`$column`";
-            }, $args['columns']);
-            $sql .= implode(",", $columns);
-        } else {
-            $sql .= "*";
-        }
-        $sql .= " FROM $table_name WHERE 1=1";
-        if(isset($args['conditions'])) {
-            $conditions = $args['conditions'];
-            foreach($conditions as $key => $condition) {
-                if(!is_array($condition)) {
-                    $sql .= " AND {$key}={$condition}";
-                } else {
-                    $sql .= " AND {$condition['key']}{$condition['operator']}{$condition['value']}";
-                }
-            }
-        }
+        return $wpdb->get_row($wpdb->prepare("SELECT * FROM %i WHERE id=%d", $table_name, $id));
+    }
 
-        $sql .= " ORDER BY id DESC";
+    /**
+     * Get export records from the database.
+     * 
+     * @param string $status The status of the export.
+     * @return object The export records.
+     */
+    public static function get_by_status($status) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . self::$table_name_without_prefix;
+        return $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE status=%s", $table_name, $status));
+    }
 
-        if(isset($args['per_page'])) {
-            $sql .= " LIMIT {$args['per_page']}";
-        }
-        
-        if(isset($args['columns']) && isset($args['per_page'])) {
-            if(sizeof($args['columns']) == 1 && $args['per_page'] == 1) {
-                return $wpdb->get_var($sql);
-            }
-        }
-
-        if(isset($args['per_page']) && $args['per_page'] == 1) {
-            return $wpdb->get_row($sql);
-        }
-
-        return $wpdb->get_results($sql);
+    /**
+     * Get an export record from the database.
+     * 
+     * @param array $args The arguments to query the database.
+     * @return object|array The export record, or an array of records.
+     */
+    public static function get_by_post_type_id($post_type_id) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . self::$table_name_without_prefix;
+        return $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE post_type_id=%d ORDER BY id DESC", $table_name, $post_type_id));
     }
 
     /**
@@ -130,7 +117,7 @@ class Export {
      * Register a new export via AJAX.
      */
     public function register() {
-        check_ajax_referer('cmw-ea-register-export', 'nonce');
+        check_ajax_referer('cmw_ea_register_export', 'nonce');
 
         if(!isset($_POST['post_type_id'])) {
             wp_send_json_error(
@@ -175,7 +162,7 @@ class Export {
      * Deregister an export via AJAX.
      */
     public function deregister() {
-        check_ajax_referer('cmw-ea-deregister-export', 'nonce');
+        check_ajax_referer('cmw_ea_deregister_export', 'nonce');
 
         if(!isset($_POST['export_id'])) {
             wp_send_json_error(array(
@@ -191,12 +178,7 @@ class Export {
 
         $export_id = sanitize_text_field(wp_unslash($_POST['export_id']));
 
-        $export = self::get(array(
-            'per_page' => 1,
-            'conditions' => array(
-                'id' => $export_id
-            )
-        ));
+        $export = self::get_by_id($export_id);
 
         if(!is_object($export)) {
             wp_send_json_error(array(
@@ -219,7 +201,7 @@ class Export {
      * Start processing an export via AJAX.
      */
     public function start() {
-        check_ajax_referer('cmw-ea-start-export', 'nonce');
+        check_ajax_referer('cmw_ea_start_export', 'nonce');
 
         if(!isset($_POST['export_id'])) {
             wp_send_json_error(array(
@@ -234,12 +216,7 @@ class Export {
         }
 
         $export_id = sanitize_text_field(wp_unslash($_POST['export_id']));
-        $export = self::get(array(
-            'per_page' => 1,
-            'conditions' => array(
-                'id' => $export_id
-            )
-        ));
+        $export = self::get_by_id($export_id);
 
         if($export->status != 'pending') {
             wp_send_json_error(array(
@@ -270,11 +247,7 @@ class Export {
      * Export all pending exports.
      */
     public function export_all() {
-        $exports = self::get(array(
-            'conditions' => array(
-                'status' => "'pending'"
-            )
-        ));
+        $exports = self::get_by_status('pending');
 
         foreach ($exports as $export) {
             $this->export($export);
@@ -297,20 +270,9 @@ class Export {
         $page = $export->page;
         $per_page = $export->per_page;
         
-        $post_type = PostType::get(array(
-            'per_page' => 1,
-            'columns' => array('post_type'), 
-            'conditions' => array(
-                'id' => $post_type_id
-            ),
-        ));
+        $post_type = PostType::get($post_type_id)->post_type;
 
-        $columns = Column::get(array(
-            'columns' => array('id', 'name', 'key', 'type'), 
-            'conditions' => array(
-                'post_type_id' => $post_type_id
-            )
-        ));
+        $columns = Column::get_by_post_type_id($post_type_id);
 
         if(sizeof($columns) == 0) {
             wp_send_json_error(array(
@@ -340,13 +302,7 @@ class Export {
      * @return int The total number of items.
      */
     public function total($post_type_id) {
-        $post_type = PostType::get(array(
-            'per_page' => 1,
-            'columns' => array('post_type'), 
-            'conditions' => array(
-                'id' => $post_type_id
-            ),
-        ));
+        $post_type = PostType::get($post_type_id)->post_type;
         global $wpdb;
         return $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s", $post_type));
     }
@@ -373,21 +329,22 @@ class Export {
             if ($column->type == 'postmeta') {
                 $meta_key = $column->key;
                 $meta_alias = 'meta_' . $meta_key;
-                $select_columns[] = $wpdb->prepare(esc_sql($meta_alias) . ".meta_value AS %s", $column->name);
-                $join_clauses[] = $wpdb->prepare("LEFT JOIN " . esc_sql($wpdb->postmeta) . " AS " . esc_sql($meta_alias) . " ON " . esc_sql($wpdb->posts) . ".ID = " . esc_sql($meta_alias) . ".post_id AND " . esc_sql($meta_alias) . ".meta_key = %s", $meta_key);
+                $select_columns[] = $wpdb->prepare("%i.meta_value AS %s", $meta_alias, $column->name);
+                $join_clauses[] = $wpdb->prepare("LEFT JOIN %i AS %i ON %i.ID = %i.post_id AND %i.meta_key = %s", $wpdb->postmeta, $meta_alias, $wpdb->posts, $meta_alias, $meta_alias, $meta_key);
             } else {
-                $select_columns[] = "{$wpdb->posts}.{$column->key} AS '{$column->name}'";
+                $select_columns[] = $wpdb->prepare("%i.%i AS %s", $wpdb->posts, $column->key, $column->name);
             }
         }
 
         $select_clause = implode(', ', $select_columns);
         $join_clause = implode(' ', $join_clauses);
 
-        $sql = $wpdb->prepare("SELECT {$wpdb->posts}.ID, " . $select_clause . "
-            FROM {$wpdb->posts}
+        $sql = $wpdb->prepare("
+            SELECT %i.ID, " . $select_clause . "
+            FROM %i
             " . $join_clause . "
-            WHERE {$wpdb->posts}.post_type = %s
-            LIMIT %d, %d", $post_type, $offset, $per_page);
+            WHERE %i.post_type = %s
+            LIMIT %d, %d", $wpdb->posts, $wpdb->posts, $wpdb->posts, $post_type, $offset, $per_page);
 
         $results = $wpdb->get_results($sql);
 
@@ -453,18 +410,13 @@ class Export {
 
         $export_id = sanitize_text_field(wp_unslash($_REQUEST['export_id']));
 
-        $export = self::get(array(
-            'columns' => array('file_path'),
-            'conditions' => array(
-                'id' => $export_id
-            )
-        ));
+        $export = self::get_by_id($export_id);
 
-        if (sizeof($export) == 0) {
+        if (!is_object($export)) {
             wp_die(esc_html__('Export not found.', 'cmw-export-anything'));
         }
 
-        $file_path = $export[0]->file_path;
+        $file_path = $export->file_path;
 
         global $wp_filesystem;
 
