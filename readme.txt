@@ -9,6 +9,9 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 == Description ==
 The CMW Export Anything plugin allows you to export data from your WordPress site. This plugin is highly customizable and easy to use.
 
+== Short Description ==
+Easily export data from your WordPress site with the highly customizable and user-friendly CMW Export Anything plugin.
+
 == Installation ==
 1. Download the plugin zip file.
 2. Navigate to `Plugins > Add New` in your WordPress admin dashboard.
