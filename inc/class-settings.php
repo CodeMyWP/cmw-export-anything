@@ -33,6 +33,9 @@ class Settings {
         add_action('wp_ajax_cmw_ea_create_column', [$this, 'create_column']);
         add_action('wp_ajax_cmw_ea_save_column', [$this, 'save_column']);
         add_action('wp_ajax_cmw_ea_get_field_keys', [$this, 'get_field_keys']);
+
+        // Register settings
+        add_action('admin_init', [$this, 'register_settings']);
     }
 
     /**
@@ -275,10 +278,26 @@ class Settings {
                     $heading = __('Not Found', 'cmw-export-anything');
                 }
             break;
+            case 'settings':
+                $heading = __('Settings', 'cmw-export-anything');
+                $actions = array(
+                    array(
+                        'key' => 'cancel', 
+                        'label' => __('Go Back', 'cmw-export-anything'), 
+                        'type' => 'secondary'
+                    )
+                );
+                
+                break;
             default:
                 $args['post_types'] = PostType::get_all();
                 $heading = __('Post Types', 'cmw-export-anything');
                 $actions = array(
+                    array(
+                        'key' => 'settings', 
+                        'label' => __('Settings', 'cmw-export-anything'), 
+                        'type' => 'outline-danger'
+                    ),
                     array(
                         'key' => 'add', 
                         'label' => __('Add Post Type', 'cmw-export-anything'), 
@@ -445,6 +464,57 @@ class Settings {
         Utilities::load_template('content/exports/modal', true);
     }
 
+    /**
+     * Register settings
+     */
+    public function register_settings() {
+        register_setting('cmw-export-anything-settings-group', 'cmw-export-anything-settings');
+        add_settings_section('cmw-export-anything-settings-section', null, null, 'cmw-export-anything-settings');
+        add_settings_field('path', __('Export Files Path', 'cmw-export-anything'), [$this, 'path_field_callback'], 'cmw-export-anything-settings', 'cmw-export-anything-settings-section');
+    }
+
+    /**
+     * Callback for the path field
+     */
+    public function path_field_callback() {
+        $settings = get_option('cmw-export-anything-settings');
+
+        // Default Path
+        $exports_dir = wp_upload_dir()['basedir'] . '/cmw-ea-exports/';
+
+        // Set default path if not set
+        if(!isset($settings['path']) || empty($settings['path'])) {
+            $settings['path'] = $exports_dir;
+        }
+        ?>
+        <input type="text" name="cmw-export-anything-settings[path]" value="<?php echo esc_attr($settings['path'] ?? ''); ?>" class="form-control">
+        <span class="d-block small mt-1 text-muted"><?php echo __('Please enter a private path with appropriate web server permissions. For example: /tmp/codemywp/backups with www-data permissions for nginx.', 'cmw-export-anything') ?></span>
+        <span class="d-block small mt-1 text-muted"><b><?php echo __('Default:', 'cmw-export-anything') ?></b> <?php echo $exports_dir ?></span>
+        <span class="d-block small mt-1 text-muted"><b><?php echo __('Warning:', 'cmw-export-anything') ?></b> <?php echo __('The default directory is publicly accessible. It is strongly recommended to set a private directory with appropriate permissions to ensure the security of your exported files.', 'cmw-export-anything') ?></span>
+        <?php
+    }
+
+    /**
+     * Get settings
+     * 
+     * @param string $setting The setting to get.
+     * @return mixed The setting value.
+     */
+    public static function get_setting($setting = null) {
+        $settings = get_option('cmw-export-anything-settings');
+        if($setting) {
+            switch($setting) {
+                case 'path':
+                    if(!isset($settings[$setting]) || empty($settings[$setting])) {
+                        return wp_upload_dir()['basedir'] . '/cmw-ea-exports/';
+                    }
+                    return $settings[$setting];
+                default:
+                    return $settings[$setting] ?? null;
+            }
+        }
+        return $settings;
+    }
 }
 
 return new Settings();

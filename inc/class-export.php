@@ -139,8 +139,8 @@ class Export {
         $post_type_id = sanitize_text_field(wp_unslash($_POST['post_type_id']));
 
         // Create a CSV File in Uploads DIR
-        $upload_dir = wp_upload_dir();
-        $exports_dir = $upload_dir['basedir'] . '/cmw-ea-exports/';
+        $exports_dir = Settings::get_setting('path');
+        error_log($exports_dir);
         if(!file_exists($exports_dir)) {
             wp_mkdir_p($exports_dir);
         }
