@@ -30,6 +30,11 @@ jQuery(function($) {
     $(".export-actions").on("click", ".start-export,.resume-export", function(e) {
         e.preventDefault();
 
+        // Reset Modal State
+        $("#exportProgressModal .download-export").addClass('d-none').attr('href', '');
+        $("#exportProgressModal .cancel-export").show();
+
+        // Show Modal
         $("#exportProgressModal").modal('show');
 
         var exportId = $(this).data('export-id');
