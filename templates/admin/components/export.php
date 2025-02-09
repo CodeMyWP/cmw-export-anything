@@ -34,12 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 break;
             case 'completed':
                 ?>
-                <form class="d-inline-block" action="<?php echo esc_url(admin_url('admin-post.php')) ?>" method="POST">
-                    <?php wp_nonce_field('cmw_ea_download_export', 'cmw_ea_nonce'); ?>
-                    <input type="hidden" name="action" value="cmw_ea_download_export">
-                    <input type="hidden" name="export_id" value="<?php echo esc_attr($export->id) ?>">
-                    <button type="submit" class="btn btn-success btn-sm">Download</button>
-                </form>
+                <a href="<?= esc_url(admin_url('admin-post.php?action=cmw_ea_download_export&export_id=' . $export->id . '&cmw_ea_nonce=' . wp_create_nonce('cmw_ea_download_export'))) ?>" class="btn btn-success btn-sm">Download</a>
                 <?php      
                 break;
             case 'failed':

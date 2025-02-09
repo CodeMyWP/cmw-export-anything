@@ -31,6 +31,9 @@ class Export {
             // Process Export
             add_action('wp_ajax_cmw_ea_start_export', array($this, 'start'));
 
+            // Process Resume
+            add_action('wp_ajax_cmw_ea_resume_export', array($this, 'resume'));
+
             // Download Export
             add_action('admin_post_cmw_ea_download_export', array($this, 'download'));
 

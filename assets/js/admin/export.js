@@ -27,7 +27,7 @@ jQuery(function($) {
         });
     });
 
-    $(".start-export").on("click", function(e) {
+    $(".export-actions").on("click", ".start-export,.resume-export", function(e) {
         e.preventDefault();
 
         $("#exportProgressModal").modal('show');
@@ -45,7 +45,12 @@ jQuery(function($) {
         });
 
         function runExport() {
-            if (!exportRunning) return;
+            if (!exportRunning) {
+                $("#exportProgressModal").modal('hide');
+                $("#export-" + exportId + " .export-actions .start-export").remove();
+                $("#export-" + exportId + " .export-actions").prepend('<a href="#" class="btn btn-primary btn-sm resume-export" data-export-id="'+exportId+'">Resume</a>');
+                return;
+            }
 
             $.post(
                 exportAnythingExport.ajax_url,
@@ -70,6 +75,9 @@ jQuery(function($) {
                             $("#exportProgressModal .message").text(response.data.message);
                             $("#exportProgressModal .cancel-export").hide();
                             $("#exportProgressModal .download-export").removeClass('d-none').attr('href', response.data.download_url);
+                            $("#export-" + exportId + " .export-actions .start-export").remove();
+                            $("#export-" + exportId + " .export-actions .resume-export").remove();
+                            $("#export-" + exportId + " .export-actions").prepend('<a href="'+response.data.download_url+'" class="btn btn-success btn-sm">Download</a>');
                         }
                     } else {
                         console.error('Export failed:', response.data);

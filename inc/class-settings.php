@@ -74,7 +74,7 @@ class Settings {
             'ajax_url' => admin_url('admin-ajax.php'),
             'register_nonce' => wp_create_nonce('cmw_ea_register_export'),
             'deregister_nonce' => wp_create_nonce('cmw_ea_deregister_export'),
-            'start_nonce' => wp_create_nonce('cmw_ea_start_export')
+            'start_nonce' => wp_create_nonce('cmw_ea_start_export'),
         ));
         wp_enqueue_script('select2', EXPORT_ANYTHING_URL . 'assets/js/admin/select2.min.js', array('jquery'), EXPORT_ANYTHING_VERSION, array('in_footer' => true));
         wp_enqueue_style('select2-css', EXPORT_ANYTHING_URL . 'assets/css/admin/select2.min.css', array(), EXPORT_ANYTHING_VERSION);
