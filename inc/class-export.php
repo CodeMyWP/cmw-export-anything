@@ -140,7 +140,6 @@ class Export {
 
         // Create a CSV File in Uploads DIR
         $exports_dir = Settings::get_setting('path');
-        error_log($exports_dir);
         if(!file_exists($exports_dir)) {
             wp_mkdir_p($exports_dir);
         }
