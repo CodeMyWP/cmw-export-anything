@@ -1,11 +1,11 @@
-=== CMW Export Anything ===
+=== Export WooCommerce Products, Orders, WordPress Posts and Custom Posts ===
 Contributors: codemywp
-Tags: export, export anything, export posts, export products
+Tags: export, export anything, export posts, export products, export orders, export custom posts
 Tested up to: 6.7
 Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-The CMW Export Anything plugin allows you to export data from your WordPress site. This plugin is highly customizable and easy to use.
+The Export Anything plugin allows you to export data from your WordPress site, including WordPress posts, WooCommerce products, orders, and custom posts. This plugin is highly customizable and easy to use.
 
 == Installation ==
 1. Download the plugin zip file.

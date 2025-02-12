@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin name: CMW Export Anything
- * Description: This plugin allows you to export anything from your WordPress site.
+ * Plugin name: Export Anything - WooCommerce Products, Orders, WordPress Posts and Custom Posts
+ * Description: The Export Anything plugin allows you to export data from your WordPress site, including WooCommerce products, orders, and more. This plugin is highly customizable and easy to use.
  * Author: CodeMyWP
  * Author uri: https://www.codemywp.com
  * Version: 1.0.2
