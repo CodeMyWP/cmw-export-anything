@@ -4,7 +4,7 @@
  * Description: The Export Anything plugin allows you to export data from your WordPress site, including WooCommerce products, orders, and more. This plugin is highly customizable and easy to use.
  * Author: CodeMyWP
  * Author uri: https://www.codemywp.com
- * Version: 1.0.2
+ * Version: 1.0.4
  * Requires at least: 6.2
  * Requires PHP: 7.4
  * Tested up to: 6.7
@@ -15,7 +15,7 @@
 
 namespace CodeMyWP\Plugins\ExportAnything;
 
-define('EXPORT_ANYTHING_VERSION', '1.0.0');
+define('EXPORT_ANYTHING_VERSION', '1.0.4');
 define('EXPORT_ANYTHING_FILE', __FILE__);
 define('EXPORT_ANYTHING_DIR', plugin_dir_path(__FILE__));
 define('EXPORT_ANYTHING_URL', plugin_dir_url(__FILE__));
