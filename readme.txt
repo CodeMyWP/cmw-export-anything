@@ -1,4 +1,4 @@
-=== Export Aything - Custom Posts, Products, Custom Fields, Users ===
+=== Export Anything - Custom Posts, Products, Custom Fields, Users ===
 Contributors: codemywp
 Tags: export, export anything, export posts, export products, export orders, export custom posts
 Tested up to: 6.7
