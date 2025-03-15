@@ -19,8 +19,8 @@ if(!defined('ABSPATH')) {
         <label for="post_type" class="col-sm-2 control-label">Post Type</label>
         <div class="col-sm-10">
             <select class="form-control" id="post_type" name="post_type" required>
-                <?php foreach ($wp_post_types as $post_type): ?>
-                    <option value="<?php echo esc_attr($post_type->name); ?>"><?php echo esc_html($post_type->label); ?></option>
+                <?php foreach ($wp_post_types as $key => $post_type): ?>
+                    <option value="<?php echo esc_attr($post_type); ?>"><?php echo ucfirst(esc_html($post_type)); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>

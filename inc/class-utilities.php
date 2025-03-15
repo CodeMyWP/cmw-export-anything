@@ -27,15 +27,19 @@ class Utilities {
     public static function get_wp_post_types() {
         $post_types = get_transient('cmw_ea_wp_post_types');
         if(!$post_types) {
-            $post_types = get_post_types(array('public' => true), 'objects');
+            $post_types = get_post_types(array('public' => true), 'names');
+            $post_types = array_values($post_types);
             set_transient('cmw_ea_wp_post_types', $post_types, 60 * 60 * 24 * 365);
         }
-        return $post_types;
+
+        $override_post_types = apply_filters('cmw_ea_wp_post_types', $post_types);
+
+        return $override_post_types;
     }
 
     public static function get_wp_post_type_name($slug) {
         $post_types = self::get_wp_post_types();
-        return isset($post_types[sanitize_key($slug)]) ? $post_types[sanitize_key($slug)]->labels->singular_name : null;
+        return isset($post_types[sanitize_key($slug)]) ? ucfirst($post_types[sanitize_key($slug)]) : null;
     }
 
     public static function get_wp_posts_columns() {

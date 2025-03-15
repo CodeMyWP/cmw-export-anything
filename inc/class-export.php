@@ -329,12 +329,12 @@ class Export {
 
         foreach ($columns as $column) {
             if ($column->type == 'postmeta') {
-                $meta_key = $column->key;
+                $meta_key = $column->column_key;
                 $meta_alias = 'meta_' . $meta_key;
                 $select_columns[] = $wpdb->prepare("%i.meta_value AS %s", $meta_alias, $column->name);
                 $join_clauses[] = $wpdb->prepare("LEFT JOIN %i AS %i ON %i.ID = %i.post_id AND %i.meta_key = %s", $wpdb->postmeta, $meta_alias, $wpdb->posts, $meta_alias, $meta_alias, $meta_key);
             } else {
-                $select_columns[] = $wpdb->prepare("%i.%i AS %s", $wpdb->posts, $column->key, $column->name);
+                $select_columns[] = $wpdb->prepare("%i.%i AS %s", $wpdb->posts, $column->column_key, $column->name);
             }
         }
 

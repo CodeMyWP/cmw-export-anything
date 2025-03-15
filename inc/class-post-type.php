@@ -19,6 +19,21 @@ class PostType {
      */
     public static $table_name_without_prefix = 'cmw_ea_post_types';
 
+    public function __construct() {
+        add_filter('cmw_ea_wp_post_types', array($this, 'add_user_post_types'));
+    }
+
+    /**
+     * Add user post types to the list of post types.
+     *
+     * @param array $post_types The list of post types.
+     * @return array The list of post types with user post types added.
+     */
+    public function add_user_post_types($post_types) {
+        array_push($post_types, 'user');
+        return $post_types;
+    }
+
     /**
      * Get a post type from the database.
      * 

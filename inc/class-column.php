@@ -36,7 +36,7 @@ class Column {
             [
                 'post_type_id' => sanitize_text_field($post_type_id),
                 'name' => sanitize_text_field($name),
-                'key' => sanitize_text_field($key),
+                'column_key' => sanitize_text_field($key),
                 'type' => sanitize_text_field($type)
             ]
         );
@@ -127,7 +127,7 @@ class Column {
             $id = intval($_POST['id']);
             $result = self::update($id, [
                 'name' => $name,
-                'key' => $key,
+                'column_key' => $key,
                 'type' => $type
             ]);
             if($result) {

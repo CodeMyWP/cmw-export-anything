@@ -405,7 +405,7 @@ class Settings {
         $args = [
             'post_type_id' => sanitize_text_field(wp_unslash($_POST['post_type_id'])),
             'name' => sanitize_text_field(wp_unslash($_POST['name'])),
-            'key' => sanitize_text_field(wp_unslash($_POST['key'])),
+            'column_key' => sanitize_text_field(wp_unslash($_POST['key'])),
             'type' => sanitize_text_field(wp_unslash($_POST['type']))
         ];
 

@@ -89,9 +89,9 @@ class Initialize {
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            `id` mediumint(9) NOT NULL AUTO_INCREMENT,
             `name` text NOT NULL,
-            post_type varchar(20) NOT NULL,
+            `post_type` varchar(20) NOT NULL,
             PRIMARY KEY  (id)
         ) $charset_collate;";
 
@@ -111,13 +111,13 @@ class Initialize {
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            post_type_id mediumint(9) NOT NULL,
-            name text NOT NULL,
-            `key` varchar(50) NOT NULL,
-            type ENUM('posts', 'postmeta') NOT NULL,
-            PRIMARY KEY  (id),
-            INDEX post_type_id (post_type_id)
+            `id` mediumint(9) NOT NULL AUTO_INCREMENT,
+            `post_type_id` mediumint(9) NOT NULL,
+            `name` text NOT NULL,
+            `column_key` varchar(50) NOT NULL,
+            `type` ENUM('posts','postmeta','users','usermeta') NOT NULL,
+            PRIMARY KEY  (`id`),
+            INDEX post_type_id (`post_type_id`)
         ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -136,16 +136,16 @@ class Initialize {
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            post_type_id mediumint(9) NOT NULL,
-            status ENUM('pending','processing','completed','failed') NOT NULL,
-            page int NOT NULL,
-            per_page int NOT NULL,
-            file_path text NOT NULL,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
-            PRIMARY KEY  (id),
-            INDEX post_type_id (post_type_id)
+            `id` mediumint(9) NOT NULL AUTO_INCREMENT,
+            `post_type_id` mediumint(9) NOT NULL,
+            `status` ENUM('pending','processing','completed','failed') NOT NULL,
+            `page` int NOT NULL,
+            `per_page` int NOT NULL,
+            `file_path` text NOT NULL,
+            `created_at` datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (`id`),
+            INDEX post_type_id (`post_type_id`)
         ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
