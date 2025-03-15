@@ -36,6 +36,19 @@ Currently, the plugin does not support scheduled exports. You need to manually e
 For support, please visit the plugin's support page on the WordPress plugin repository or contact us via email.
 
 == Changelog ==
+= 1.0.4 =
+* Adding Users Export Support
+* Table Schema Issues Fixed
+
+= 1.0.3 =
+* Bug Fixes
+
+= 1.0.2 =
+* Bug Fixes
+
+= 1.0.1 =
+* Bug Fixes
+
 = 1.0.0 =
 * Initial Release
 
