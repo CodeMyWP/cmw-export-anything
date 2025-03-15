@@ -189,7 +189,12 @@ class Settings {
                 case 'add':
                 break;
                 case 'edit':
-                    $this->add_column_modal();
+                    if(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
+                        $args['post_id'] = intval($_REQUEST['id']);
+                        $post_type_object = PostType::get(intval($_REQUEST['id']));
+                        $post_type = $post_type_object->post_type;
+                        $this->add_column_modal($post_type);
+                    }
                 break;
                 case 'view':
                     $this->export_progress_modal();
@@ -437,14 +442,23 @@ class Settings {
         $type = sanitize_text_field(wp_unslash($_POST['type']));
         $post_type_id = sanitize_text_field(wp_unslash($_POST['post_type_id']));
 
-        if ($type === 'posts') {
-            $keys = Utilities::get_wp_posts_columns();
-        } else if ($type === 'postmeta') {
-            $keys = Utilities::get_post_meta_keys($post_type_id);
-        } else {
-            wp_send_json_error(array(
-                'message' => __('Invalid type', 'cmw-export-anything')
-            ));
+        switch ($type) {
+            case 'posts':
+                $keys = Utilities::get_wp_posts_columns();
+                break;
+            case 'postmeta':
+                $keys = Utilities::get_post_meta_keys($post_type_id);
+                break;
+            case 'users':
+                $keys = Utilities::get_wp_users_columns();
+                break;
+            case 'usermeta':
+                $keys = Utilities::get_user_meta_keys();
+                break;
+            default:
+                wp_send_json_error(array(
+                    'message' => __('Invalid type', 'cmw-export-anything')
+                ));
         }
 
         wp_send_json_success($keys);
@@ -453,8 +467,8 @@ class Settings {
     /**
      * Load add column modal template
      */
-    public function add_column_modal() {
-        Utilities::load_template('content/columns/modal', true);
+    public function add_column_modal($post_type) {
+        Utilities::load_template('content/columns/modal', true, array('post_type' => $post_type));
     }
 
     /**

@@ -324,29 +324,52 @@ class Export {
 
         global $wpdb;
 
+        switch($post_type) {
+            case 'user':
+                $main_table = $wpdb->users;
+                $meta_table = $wpdb->usermeta;
+                $id_column = 'user_id';
+                break;
+            default:
+                $main_table = $wpdb->posts;
+                $meta_table = $wpdb->postmeta;
+                $id_column = 'post_id';
+                break;
+        }
+
         $select_columns = [];
         $join_clauses = [];
+        $where_clauses = [];
 
         foreach ($columns as $column) {
-            if ($column->type == 'postmeta') {
+            if ($column->type == 'postmeta' || $column->type == 'usermeta') {
                 $meta_key = $column->column_key;
                 $meta_alias = 'meta_' . $meta_key;
                 $select_columns[] = $wpdb->prepare("%i.meta_value AS %s", $meta_alias, $column->name);
-                $join_clauses[] = $wpdb->prepare("LEFT JOIN %i AS %i ON %i.ID = %i.post_id AND %i.meta_key = %s", $wpdb->postmeta, $meta_alias, $wpdb->posts, $meta_alias, $meta_alias, $meta_key);
+                $join_clauses[] = $wpdb->prepare("LEFT JOIN %i AS %i ON %i.ID = %i.%i AND %i.meta_key = %s", $meta_table, $meta_alias, $main_table, $meta_alias, $id_column, $meta_alias, $meta_key);
             } else {
-                $select_columns[] = $wpdb->prepare("%i.%i AS %s", $wpdb->posts, $column->column_key, $column->name);
+                $select_columns[] = $wpdb->prepare("%i.%i AS %s", $main_table, $column->column_key, $column->name);
             }
+        }
+
+        switch($post_type) {
+            case 'user':
+                break;
+            default:
+            $where_clauses[] = $wpdb->prepare("%i.post_type = %s", $main_table, $post_type);
+            break;
         }
 
         $select_clause = implode(', ', $select_columns);
         $join_clause = implode(' ', $join_clauses);
+        $where_clause = implode(' AND ', $where_clauses);
 
         $sql = $wpdb->prepare("
             SELECT %i.ID, " . $select_clause . "
             FROM %i
             " . $join_clause . "
-            WHERE %i.post_type = %s
-            LIMIT %d, %d", $wpdb->posts, $wpdb->posts, $wpdb->posts, $post_type, $offset, $per_page);
+            WHERE 1=1 " . $where_clause . "
+            LIMIT %d, %d", $main_table, $main_table, $offset, $per_page);
 
         $results = $wpdb->get_results($sql);
 

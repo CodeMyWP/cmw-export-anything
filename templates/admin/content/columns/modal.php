@@ -28,8 +28,20 @@ if(!isset($_REQUEST['id']) || empty($_REQUEST['id'])) {
                         <label for="modal_column_type" class="form-label"><?php esc_html_e( 'Field Type', 'cmw-export-anything' ); ?></label>
                         <select class="form-control" name="type" id="modal_column_type">
                             <option value=""><?php esc_html_e( 'Select Field Type', 'cmw-export-anything' ); ?></option>
-                            <option value="postmeta"><?php esc_html_e( 'Post Meta', 'cmw-export-anything' ); ?></option>
-                            <option value="posts"><?php esc_html_e( 'Posts', 'cmw-export-anything' ); ?></option>
+                            <?php 
+                            switch($post_type) {
+                                case 'user':
+                                    ?>
+                                    <option value="usermeta"><?php esc_html_e( 'User Meta', 'cmw-export-anything' ); ?></option>
+                                    <option value="users"><?php esc_html_e( 'Users', 'cmw-export-anything' ); ?></option>
+                                    <?php
+                                break;
+                                default:
+                                ?>
+                                <option value="postmeta"><?php esc_html_e( 'Post Meta', 'cmw-export-anything' ); ?></option>
+                                <option value="posts"><?php esc_html_e( 'Posts', 'cmw-export-anything' ); ?></option>
+                                <?php
+                            } ?>
                         </select>
                     </div>
                     <div class="mb-3">

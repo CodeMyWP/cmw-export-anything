@@ -39,12 +39,27 @@ class Utilities {
 
     public static function get_wp_post_type_name($slug) {
         $post_types = self::get_wp_post_types();
-        return isset($post_types[sanitize_key($slug)]) ? ucfirst($post_types[sanitize_key($slug)]) : null;
+
+        if(isset($post_types[sanitize_key($slug)])) {
+            return ucfirst($post_types[sanitize_key($slug)]);
+        } elseif($slug == 'user') {
+            return 'User';
+        } elseif($slug == 'comment') {
+            return 'Comment';
+        }
+
+        return null;
     }
 
     public static function get_wp_posts_columns() {
         global $wpdb;
         $columns = $wpdb->get_col("DESC {$wpdb->posts}", 0);
+        return array_map('sanitize_text_field', $columns);
+    }
+
+    public static function get_wp_users_columns() {
+        global $wpdb;
+        $columns = $wpdb->get_col("DESC {$wpdb->users}", 0);
         return array_map('sanitize_text_field', $columns);
     }
 
@@ -59,6 +74,12 @@ class Utilities {
             WHERE p.post_type = %s",
             $post_type_type
         ));
+        return array_map('sanitize_text_field', $meta_keys);
+    }
+
+    public static function get_user_meta_keys() {
+        global $wpdb;
+        $meta_keys = $wpdb->get_col("SELECT DISTINCT meta_key FROM {$wpdb->usermeta}");
         return array_map('sanitize_text_field', $meta_keys);
     }
 }
