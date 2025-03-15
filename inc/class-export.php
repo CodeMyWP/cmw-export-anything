@@ -356,13 +356,13 @@ class Export {
             case 'user':
                 break;
             default:
-            $where_clauses[] = $wpdb->prepare("%i.post_type = %s", $main_table, $post_type);
+                $where_clauses[] = $wpdb->prepare(" AND %i.post_type = %s", $main_table, $post_type);
             break;
         }
 
         $select_clause = implode(', ', $select_columns);
         $join_clause = implode(' ', $join_clauses);
-        $where_clause = implode(' AND ', $where_clauses);
+        $where_clause = implode(' ', $where_clauses);
 
         $sql = $wpdb->prepare("
             SELECT %i.ID, " . $select_clause . "
