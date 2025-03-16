@@ -74,6 +74,7 @@ class Initialize {
         $this->create_post_types_table();
         $this->create_columns_table();
         $this->create_exports_table();
+        $this->create_filters_table();
     }
 
     /**
@@ -146,6 +147,33 @@ class Initialize {
             `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
             PRIMARY KEY  (`id`),
             INDEX post_type_id (`post_type_id`)
+        ) $charset_collate;";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+    }
+
+    /**
+     * Create the filters table in the database.
+     *
+     * @return void
+     */
+    public function create_filters_table() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . Filter::$table_name_without_prefix;
+
+        $charset_collate = $wpdb->get_charset_collate();
+
+        $sql = "CREATE TABLE $table_name (
+            `id` mediumint(9) NOT NULL AUTO_INCREMENT,
+            `post_type_id` mediumint(9) NOT NULL,
+            `column_key` varchar(50) NOT NULL,
+            `operator` varchar(20) NOT NULL,
+            `column_value` text NOT NULL,
+            `status` ENUM('active','inactive') NOT NULL,
+            `created_at` datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (`id`)
         ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
